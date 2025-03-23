@@ -15,7 +15,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 # from sklearn.metrics import PrecisionRecallDisplay as PRDisp
-import SimpleTimer
+from app.src.SimpleTimer import SimpleTimer
 
 
 class MalignantNetTrafficPredictor:
@@ -172,23 +172,23 @@ class MalignantNetTrafficPredictor:
         output_df = pd.concat([input_df[["uid"]], pd.DataFrame(y_pred, columns=["prediction"])], axis=1)
         return output_df
 
-    def predict_to_file(self, filepath):
-        if not (os.path.exists(filepath)):
-            raise FileNotFoundError(f"File not found: {filepath}")
-        if not (os.path.isfile(filepath)):
-            raise FileNotFoundError(f"Specified path is not a file: {filepath}")
+    def predict_to_file(self, inputpath: str, outputpath: str):
+        # if not (os.path.exists(inputpath)):
+        #     raise FileNotFoundError(f"File not found: {inputpath}")
+        # if not (os.path.isfile(inputpath)):
+        #     raise FileNotFoundError(f"Specified path is not a file: {inputpath}")
 
-        input_filename = os.path.basename(filepath)
-        file_ext = Path(input_filename).suffix
-        output_filename = input_filename[0:(-1 * len(file_ext))] + '_predictions' + file_ext
-        output_filepath = filepath.replace(input_filename, 'output/' + output_filename)
-        if os.path.isfile(output_filepath):
-            os.remove(output_filepath)
-        print(output_filepath)
+        # input_filename = os.path.basename(inputpath)
+        # file_ext = Path(input_filename).suffix
+        # output_filename = input_filename[0:(-1 * len(file_ext))] + '_predictions' + file_ext
+        # output_filepath = filepath.replace(input_filename, 'output/' + output_filename)
+        # if os.path.isfile(output_filepath):
+        #     os.remove(output_filepath)
+        # print(output_filepath)
         first_pass = True
-        chunk_tmr = SimpleTimer.SimpleTimer()
+        chunk_tmr = SimpleTimer()
         chunk_tmr.start()
-        for input_chunk_df in pd.read_csv(filepath, sep="|", low_memory=False, dtype=self.INPUT_FILE_COLS,
+        for input_chunk_df in pd.read_csv(inputpath, sep="|", low_memory=False, dtype=self.INPUT_FILE_COLS,
                                           chunksize=self.INPUT_FILE_CHUNKSIZE):
 
             print(f"Chunk read time: {chunk_tmr.sts(chunk_tmr.laptime())}")
@@ -206,9 +206,9 @@ class MalignantNetTrafficPredictor:
             output_df = pd.concat([this_chunk[["uid"]], pd.DataFrame(y_pred, columns=["prediction"])], axis=1)
             del y_pred
 
-            if not os.path.isdir(output_filepath.replace(output_filename, '')):
-                os.mkdir(output_filepath.replace(output_filename, ''))
-            _ = output_df.to_csv(output_filepath, sep="|", mode="a", header=first_pass, index=False)
+            # if not os.path.isdir(output_filepath.replace(output_filename, '')):
+            #     os.mkdir(output_filepath.replace(output_filename, ''))
+            _ = output_df.to_csv(outputpath, sep="|", mode="a", header=first_pass, index=False)
             del output_df
             print(f"Chunk output time: {chunk_tmr.sts(chunk_tmr.laptime())}")
 
