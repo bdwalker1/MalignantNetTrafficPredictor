@@ -1,4 +1,5 @@
 import os
+import requests
 from pathlib import Path
 import joblib
 import numpy as np
@@ -79,6 +80,20 @@ class MalignantNetTrafficPredictor:
                                                       random_state=self.__random_state)
         self.model_name = ""
         self.model_description = ""
+
+    def __get_model_from_repo(self, model_name):
+        repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
+        model_extension = ".model"
+
+        request_url = repo_model_url_prefix + model_name + model_extension
+        response = requests.get(request_url)
+        local_model_path = "./models/" + model_name + model_extension
+
+        if response.status_code == 200:
+            with open(local_model_path, "wb") as f:
+                f.write(response.content)
+        else:
+            raise Exception(F"Failed to retrieve model. Status code: {response.status_code}")
 
     def __onehot_encode(self, colname, df, train=False):
         if colname not in df.columns:
@@ -244,5 +259,8 @@ class MalignantNetTrafficPredictor:
         self.model_description = loaded_model['desc']
         self.__predictor = loaded_model['model']
         self.__encoders = loaded_model['encoders']
+
+    def get_latest_model(self):
+        self.__get_model_from_repo("MalignantNetTrafficPredictor-latest")
 
 
