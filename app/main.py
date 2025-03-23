@@ -12,6 +12,14 @@ api = FastAPI()
 async def root():
     return {"message": "Welcome to Malignant Net Traffic Predictor"}
 
+@api.post("/getlatestmodel/")
+async def predict():
+    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+    net_predictor.get_latest_model()
+    print(F"Model name: {net_predictor.model_name}")
+    print(F"Description: {net_predictor.model_description}")
+    return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+
 @api.post("/predictfromfile/")
 async def predict(fileurl: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
