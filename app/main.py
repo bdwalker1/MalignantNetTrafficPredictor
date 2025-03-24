@@ -13,15 +13,24 @@ async def root():
     return {"message": "Welcome to Malignant Net Traffic Predictor"}
 
 @api.post("/getlatestmodel/")
-async def predict():
+async def getlatestmodel():
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
-    net_predictor.get_latest_model()
+    net_predictor.retrieve_latest_model()
+    print(F"Model name: {net_predictor.model_name}")
+    print(F"Description: {net_predictor.model_description}")
+    return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+
+@api.post("/getmodelversion/")
+async def get_modelversion(name: str):
+    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+    net_predictor.retrieve_named_model(name)
+    net_predictor.save_model("MalignantNetTrafficPredictor-v0.1", "First official trained model. GradientBoostingClassifier w/ n_estimators=10, learning_rate=1.0, max_depth=4", "MalignantNetTrafficPredictor-v0.1")
     print(F"Model name: {net_predictor.model_name}")
     print(F"Description: {net_predictor.model_description}")
     return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
 
 @api.post("/predictfromfile/")
-async def predict(fileurl: str):
+async def predictfromfile(fileurl: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
     print("Loading model from file...")
     net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
@@ -31,7 +40,7 @@ async def predict(fileurl: str):
     return output_df.to_json()
 
 @api.post("/predictfile2file/")
-async def predict(inputurl: str, outputurl: str):
+async def predictfile2file(inputurl: str, outputurl: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
     print("Loading model from file...")
     net_predictor.load_official_model("MalignantNetTrafficPredictor-v0.1")

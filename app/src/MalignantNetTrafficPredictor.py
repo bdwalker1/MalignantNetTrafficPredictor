@@ -81,19 +81,26 @@ class MalignantNetTrafficPredictor:
         self.model_name = ""
         self.model_description = ""
 
+    @staticmethod
+    def __downlaod_file(url, local_filepath):
+        try:
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            with open(local_filepath, "wb") as f:
+                for chunk in response.iter_content(chunk_size=4096):
+                    f.write(chunk)
+            print(F"File {url} downloaded to {local_filepath}")
+        except requests.exceptions.RequestException as e:
+            raise Exception(F"Failed to retrieve file. Error occurred: {e}")
+
     def __get_model_from_repo(self, model_name):
         repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
         model_extension = ".model"
 
         request_url = repo_model_url_prefix + model_name + model_extension
-        response = requests.get(request_url)
         local_model_path = "./models/" + model_name + model_extension
 
-        if response.status_code == 200:
-            with open(local_model_path, "wb") as f:
-                f.write(response.content)
-        else:
-            raise Exception(F"Failed to retrieve model. Status code: {response.status_code}")
+        self.__downlaod_file(request_url, local_model_path)
 
     def __onehot_encode(self, colname, df, train=False):
         if colname not in df.columns:
@@ -264,7 +271,10 @@ class MalignantNetTrafficPredictor:
         self.__predictor = None
         self.__encoders = None
 
-    def get_latest_model(self):
-        self.__get_model_from_repo("MalignantNetTrafficPredictor-latest")
-        self.load_official_model("MalignantNetTrafficPredictor-latest")
+    def retrieve_latest_model(self):
+        self.retrieve_named_model("MalignantNetTrafficPredictor-latest")
+
+    def retrieve_named_model(self, name: str):
+        self.__get_model_from_repo(name)
+        self.load_official_model(name)
 
