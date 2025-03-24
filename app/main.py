@@ -1,15 +1,15 @@
-# import os
+import os, time
+import tempfile as __tempfile
 from io import StringIO
-
-import numpy as np
+# import numpy as np
 from fastapi import FastAPI
 # from fastapi.responses import StreamingResponse
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 import uvicorn
 import pandas as pd
-# from app.src.SimpleTimer import SimpleTimer
-from app.src.MalignantNetTrafficPredictor import MalignantNetTrafficPredictor
-import app.src.MNTP_Website as web
+# from src.SimpleTimer import SimpleTimer
+from src.MalignantNetTrafficPredictor import MalignantNetTrafficPredictor
+import src.MNTP_Website as web
 
 api = FastAPI()
 
@@ -27,7 +27,8 @@ async def getlatestmodel():
         return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
     except Exception as e:
         return {"error": F"Failed to retrieve latest model. Ensure api container has access to "
-                         F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"}
+                         F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
+                         F". Details: {str(e)}"}
 
 @api.post("/getmodelversion/")
 async def get_modelversion(name: str):
@@ -40,7 +41,7 @@ async def get_modelversion(name: str):
     except Exception as e:
         return {"error": F"Failed to retrieve model. Ensure model named '{name}' exists at "
                          F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/ "
-                         F"and that your api container has access to that site."}
+                         F"and that your api container has access to that site. Details: {str(e)}"}
 
 @api.post("/predictfromjson/")
 async def predictfromjson(json_str: str):
@@ -73,8 +74,15 @@ async def predictfromfile(fileurl: str):
     net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
     print(F"Model name: {net_predictor.model_name}")
     print(F"Description: {net_predictor.model_description}")
+
     output_df = net_predictor.predictfromfile(fileurl)
-    return output_df.to_json()
+    try:
+        outputpath = maketempfile()
+        output_df.to_csv(path_or_buf=outputpath, sep="|", lineterminator="\n", index=False)
+        response = FileResponse(path=outputpath, filename="predictions.csv", media_type="application/csv")
+        return response
+    except Exception as e:
+        return {"error": F"There was an error returning your results: {e}"}
 
 @api.post("/predictfile2file/")
 async def predictfile2file(inputurl: str, outputurl: str):
@@ -86,8 +94,30 @@ async def predictfile2file(inputurl: str, outputurl: str):
     _ = net_predictor.predict_to_file(inputurl,outputurl)
     return {"mesage": F"Predictions written to {outputurl}."}
 
+def maketempfile():
+    cleantempfiles()
+    tempdir = "./tmp/"
+    if not (os.path.exists(tempdir)):
+        os.makedirs(tempdir)
+    if not (os.path.isdir(tempdir)):
+        raise Exception(f"Path {tempdir} is not a directory.")
+    tempfile = __tempfile.NamedTemporaryFile(mode="w+b", dir=tempdir, suffix=".csv", delete=True, delete_on_close=False)
+    tmpfilename = str(tempfile.name)
+    tempfile.close()
+    return tmpfilename
+
+def cleantempfiles():
+    tempdir = "./tmp/"
+    if os.path.exists(tempdir):
+        for entry in os.scandir(tempdir):
+            if entry.is_file():
+                file_age = int((time.time() - os.stat(entry.path).st_mtime) / 60)
+                # os.path.getmtime(entry.path)
+                if file_age > 10:
+                    os.remove(entry.path)
+
 if __name__ == "__main__":
-    uvicorn.run(api, host="127.0.0.1", port=8000)
+    uvicorn.run(api, host="0.0.0.0", port=8000)
 
 # if __name__ == '__main__':
 #     datadir = "G:/My Drive/UCSD_MLE_Bootcamp_Capstone/data/MalwareDetectionInNetworkTrafficData/"

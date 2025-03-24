@@ -1,6 +1,6 @@
 import os
 import requests
-from pathlib import Path
+# from pathlib import Path
 import joblib
 import numpy as np
 import datetime as dt
@@ -16,7 +16,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 # from sklearn.metrics import PrecisionRecallDisplay as PRDisp
-from app.src.SimpleTimer import SimpleTimer
+from src.SimpleTimer import SimpleTimer
 
 
 class MalignantNetTrafficPredictor:
