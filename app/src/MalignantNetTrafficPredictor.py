@@ -100,7 +100,10 @@ class MalignantNetTrafficPredictor:
         request_url = repo_model_url_prefix + model_name + model_extension
         local_model_path = "./models/" + model_name + model_extension
 
-        self.__downlaod_file(request_url, local_model_path)
+        try:
+            self.__downlaod_file(request_url, local_model_path)
+        except Exception as e:
+            raise Exception(F"Failed to download model. Error occurred: {e}")
 
     def __onehot_encode(self, colname, df, train=False):
         if colname not in df.columns:
@@ -181,9 +184,13 @@ class MalignantNetTrafficPredictor:
         x = self.__training_df.drop("target", axis=1)
         self.__predictor.fit(x, y)
 
-    def predict(self, filepath):
+    def predictfromfile(self, filepath: str):
         # Load file(s) / Verify data format
         input_df = self.__load_datafile(filepath)
+        output_df = self.predict(input_df)
+        return output_df
+
+    def predict(self, input_df: pd.DataFrame):
 
         # Pre-process data
         self.__predict_df = self.__prepare_input(input_df)

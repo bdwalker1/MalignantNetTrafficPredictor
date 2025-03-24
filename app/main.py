@@ -1,47 +1,84 @@
-import os
+# import os
+from io import StringIO
+
+import numpy as np
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+# from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse
 import uvicorn
 import pandas as pd
-from app.src.SimpleTimer import SimpleTimer
+# from app.src.SimpleTimer import SimpleTimer
 from app.src.MalignantNetTrafficPredictor import MalignantNetTrafficPredictor
+import app.src.MNTP_Website as web
 
 api = FastAPI()
 
-@api.get("/")
+@api.get("/", response_class=HTMLResponse)
 async def root():
-    return {"message": "Welcome to Malignant Net Traffic Predictor"}
+    return web.landing_page()
 
 @api.post("/getlatestmodel/")
 async def getlatestmodel():
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
-    net_predictor.retrieve_latest_model()
-    print(F"Model name: {net_predictor.model_name}")
-    print(F"Description: {net_predictor.model_description}")
-    return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    try:
+        net_predictor.retrieve_latest_model()
+        print(F"Model name: {net_predictor.model_name}")
+        print(F"Description: {net_predictor.model_description}")
+        return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    except Exception as e:
+        return {"error": F"Failed to retrieve latest model. Ensure api container has access to "
+                         F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"}
 
 @api.post("/getmodelversion/")
 async def get_modelversion(name: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
-    net_predictor.retrieve_named_model(name)
-    net_predictor.save_model("MalignantNetTrafficPredictor-v0.1", "First official trained model. GradientBoostingClassifier w/ n_estimators=10, learning_rate=1.0, max_depth=4", "MalignantNetTrafficPredictor-v0.1")
-    print(F"Model name: {net_predictor.model_name}")
-    print(F"Description: {net_predictor.model_description}")
-    return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    try:
+        net_predictor.retrieve_named_model(name)
+        print(F"Model name: {net_predictor.model_name}")
+        print(F"Description: {net_predictor.model_description}")
+        return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    except Exception as e:
+        return {"error": F"Failed to retrieve model. Ensure model named '{name}' exists at "
+                         F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/ "
+                         F"and that your api container has access to that site."}
 
-@api.post("/predictfromfile/")
-async def predictfromfile(fileurl: str):
-    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+@api.post("/predictfromjson/")
+async def predictfromjson(json_str: str):
+    net_predictor = MalignantNetTrafficPredictor()
     print("Loading model from file...")
     net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
     print(F"Model name: {net_predictor.model_name}")
     print(F"Description: {net_predictor.model_description}")
-    output_df = net_predictor.predict(fileurl)
+    empty_df = pd.DataFrame([], columns=net_predictor.INPUT_FILE_COLS)
+    try:
+        input_df = pd.read_json(StringIO(json_str))
+        columns_match = True
+        for match in (input_df.columns==empty_df.columns):
+            columns_match = columns_match & match
+        if columns_match:
+            for col in input_df.columns:
+                input_df[col] = input_df[col].astype(net_predictor.INPUT_FILE_COLS[col])
+            print(input_df.dtypes)
+            output_df = net_predictor.predict(input_df)
+            return output_df.to_json()
+        else:
+            return { "Error": "Columns do not match expected input schema."}
+    except Exception as e:
+        return {"error": F"Exception occurred: {e}"}
+
+@api.post("/predictfromfile/")
+async def predictfromfile(fileurl: str):
+    net_predictor = MalignantNetTrafficPredictor()
+    print("Loading model from file...")
+    net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
+    print(F"Model name: {net_predictor.model_name}")
+    print(F"Description: {net_predictor.model_description}")
+    output_df = net_predictor.predictfromfile(fileurl)
     return output_df.to_json()
 
 @api.post("/predictfile2file/")
 async def predictfile2file(inputurl: str, outputurl: str):
-    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+    net_predictor = MalignantNetTrafficPredictor()
     print("Loading model from file...")
     net_predictor.load_official_model("MalignantNetTrafficPredictor-v0.1")
     print(F"Model name: {net_predictor.model_name}")
