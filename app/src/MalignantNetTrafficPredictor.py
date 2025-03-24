@@ -148,20 +148,20 @@ class MalignantNetTrafficPredictor:
         return prep_df
 
     def __load_trainingfile(self, filepath):
-        if not (os.path.exists(filepath)):
-            raise FileNotFoundError(f"File not found: {filepath}")
-        if not (os.path.isfile(filepath)):
-            raise FileNotFoundError(f"Specified path is not a file: {filepath}")
+        # if not (os.path.exists(filepath)):
+        #     raise FileNotFoundError(f"File not found: {filepath}")
+        # if not (os.path.isfile(filepath)):
+        #     raise FileNotFoundError(f"Specified path is not a file: {filepath}")
 
         self.__training_df = pd.read_csv(filepath, sep="|", low_memory=False, dtype=self.TRAINING_FILE_COLS)
         print(f"Training data shape: {self.__training_df.shape}")
         return self.__training_df
 
     def __load_datafile(self, filepath):
-        if not (os.path.exists(filepath)):
-            raise FileNotFoundError(f"File not found: {filepath}")
-        if not (os.path.isfile(filepath)):
-            raise FileNotFoundError(f"Specified path is not a file: {filepath}")
+        # if not (os.path.exists(filepath)):
+        #     raise FileNotFoundError(f"File not found: {filepath}")
+        # if not (os.path.isfile(filepath)):
+        #     raise FileNotFoundError(f"Specified path is not a file: {filepath}")
 
         load_df = pd.read_csv(filepath, sep="|", low_memory=False, dtype=self.INPUT_FILE_COLS)
         print(f"Input data shape: {load_df.shape}")
@@ -236,31 +236,35 @@ class MalignantNetTrafficPredictor:
     def get_model(self):
         return self.__predictor
 
-    def load_repo_model(self, filename):
-        loaded_model = joblib.load(filename)
-        self.__predictor = loaded_model['model']
-        self.__encoders = loaded_model['encoders']
-
-    def save_model(self, name, desc, filename):
-        model_to_save = {}
-        model_to_save['name'] = name
-        model_to_save['desc'] = desc
-        model_to_save['model'] = self.__predictor
-        model_to_save['encoders'] = self.__encoders
-        joblib.dump(model_to_save, filename)
-
-    def clear_model(self):
-        self.__predictor = None
-        self.__encoders = None
-
-    def load_saved_model(self, filename):
-        loaded_model = joblib.load(filename)
+    def __load__model_file(self, filepath):
+        loaded_model = joblib.load(filepath)
         self.model_name = loaded_model['name']
         self.model_description = loaded_model['desc']
         self.__predictor = loaded_model['model']
         self.__encoders = loaded_model['encoders']
 
+    def load_official_model(self, filename):
+        filepath = "./models/" + filename + ".model"
+        self.__load__model_file(filepath)
+
+    def load_user_model(self, filename):
+        filepath = "./models_user/" + filename + ".model"
+        self.__load__model_file(filepath)
+
+    def save_model(self, name, desc, filename):
+        filepath = "./models_user/" + filename + ".model"
+        model_to_save = {}
+        model_to_save['name'] = name
+        model_to_save['desc'] = desc
+        model_to_save['model'] = self.__predictor
+        model_to_save['encoders'] = self.__encoders
+        joblib.dump(model_to_save, filepath)
+
+    def clear_model(self):
+        self.__predictor = None
+        self.__encoders = None
+
     def get_latest_model(self):
         self.__get_model_from_repo("MalignantNetTrafficPredictor-latest")
-
+        self.load_official_model("MalignantNetTrafficPredictor-latest")
 

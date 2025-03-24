@@ -24,24 +24,20 @@ async def predict():
 async def predict(fileurl: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
     print("Loading model from file...")
-    net_predictor.load_saved_model("./models/MalignantNetTrafficPredictor-v0.1.model")
+    net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
     print(F"Model name: {net_predictor.model_name}")
     print(F"Description: {net_predictor.model_description}")
     output_df = net_predictor.predict(fileurl)
-    # output_data = output_df.to_csv(index=False, header=True, sep="|", lineterminator="\n")
     return output_df.to_json()
-    # return StreamingResponse(output_data, media_type="text/csv")
 
 @api.post("/predictfile2file/")
 async def predict(inputurl: str, outputurl: str):
     net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
     print("Loading model from file...")
-    net_predictor.load_saved_model("./models/MalignantNetTrafficPredictor-v0.1.model")
+    net_predictor.load_official_model("MalignantNetTrafficPredictor-v0.1")
     print(F"Model name: {net_predictor.model_name}")
     print(F"Description: {net_predictor.model_description}")
-    output_df = net_predictor.predict_to_file(inputurl,outputurl)
-    # output_data = output_df.to_csv(index=False, header=True, sep="|", lineterminator="\n")
-    # return output_df.to_json()
+    _ = net_predictor.predict_to_file(inputurl,outputurl)
     return {"mesage": F"Predictions written to {outputurl}."}
 
 if __name__ == "__main__":
