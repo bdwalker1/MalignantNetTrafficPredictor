@@ -70,8 +70,8 @@ class MalignantNetTrafficPredictor:
         self.__learning_rate = learning_rate
         self.__max_depth = max_depth
         self.__random_state = random_state
-        self.__training_df = pd.DataFrame(columns=self.TRAINING_FILE_COLS.keys())
-        self.__predict_df = pd.DataFrame(columns=self.INPUT_FILE_COLS.keys())
+        self.__training_df = pd.DataFrame(columns=list(self.TRAINING_FILE_COLS.keys()))
+        self.__predict_df = pd.DataFrame(columns=list(self.INPUT_FILE_COLS.keys()))
         self.__encoders = dict()
 
         self.__predictor = GradientBoostingClassifier(n_estimators=self.__n_estimators,
@@ -202,18 +202,13 @@ class MalignantNetTrafficPredictor:
         return output_df
 
     def predict_to_file(self, inputpath: str, outputpath: str):
-        # if not (os.path.exists(inputpath)):
-        #     raise FileNotFoundError(f"File not found: {inputpath}")
-        # if not (os.path.isfile(inputpath)):
-        #     raise FileNotFoundError(f"Specified path is not a file: {inputpath}")
 
         # input_filename = os.path.basename(inputpath)
         # file_ext = Path(input_filename).suffix
-        # output_filename = input_filename[0:(-1 * len(file_ext))] + '_predictions' + file_ext
-        # output_filepath = filepath.replace(input_filename, 'output/' + output_filename)
-        # if os.path.isfile(output_filepath):
-        #     os.remove(output_filepath)
-        # print(output_filepath)
+        output_dir = os.path.dirname(outputpath)
+        # output_filename = os.path.basename(outputpath)
+        if not(os.path.exists(output_dir)):
+            os.makedirs(output_dir)
         first_pass = True
         chunk_tmr = SimpleTimer()
         chunk_tmr.start()
@@ -235,8 +230,6 @@ class MalignantNetTrafficPredictor:
             output_df = pd.concat([this_chunk[["uid"]], pd.DataFrame(y_pred, columns=["prediction"])], axis=1)
             del y_pred
 
-            # if not os.path.isdir(output_filepath.replace(output_filename, '')):
-            #     os.mkdir(output_filepath.replace(output_filename, ''))
             _ = output_df.to_csv(outputpath, sep="|", mode="a", header=first_pass, index=False)
             del output_df
             print(f"Chunk output time: {chunk_tmr.sts(chunk_tmr.laptime())}")
@@ -262,12 +255,17 @@ class MalignantNetTrafficPredictor:
         self.__load__model_file(filepath)
 
     def load_user_model(self, filename):
-        filepath = "./models_user/" + filename + ".model"
+        filepath = "./mntp-data/models_user/" + filename + ".model"
         self.__load__model_file(filepath)
 
     def save_model(self, name, desc, filename):
-        filepath = "./models_user/" + filename + ".model"
-        model_to_save = {}
+        user_model_path = "./mntp-data/models_user/"
+        if not(os.path.exists(user_model_path)):
+            os.makedirs(user_model_path)
+        if not(os.path.isdir(user_model_path)):
+            raise NotADirectoryError(f"{user_model_path} is not a directory")
+        filepath = user_model_path + filename + ".model"
+        model_to_save = dict()
         model_to_save['name'] = name
         model_to_save['desc'] = desc
         model_to_save['model'] = self.__predictor

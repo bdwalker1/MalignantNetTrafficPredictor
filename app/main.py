@@ -24,6 +24,7 @@ async def getlatestmodel():
         net_predictor.retrieve_latest_model()
         print(F"Model name: {net_predictor.model_name}")
         print(F"Description: {net_predictor.model_description}")
+        net_predictor.save_model("user_model-v0.1",F"Copy of {net_predictor.model_name}", "user_model-v0.1")
         return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
     except Exception as e:
         return {"error": F"Failed to retrieve latest model. Ensure api container has access to "
@@ -54,8 +55,12 @@ async def predictfromjson(json_str: str):
     try:
         input_df = pd.read_json(StringIO(json_str))
         columns_match = True
-        for match in (input_df.columns==empty_df.columns):
-            columns_match = columns_match & match
+        # for match in (list(input_df.columns)==list(empty_df.columns)):
+        #     columns_match = columns_match & match
+        for n, col in enumerate(input_df.columns):
+            if col != empty_df.columns[n]:
+                columns_match = False
+                break
         if columns_match:
             for col in input_df.columns:
                 input_df[col] = input_df[col].astype(net_predictor.INPUT_FILE_COLS[col])
@@ -96,7 +101,7 @@ async def predictfile2file(inputurl: str, outputurl: str):
 
 def maketempfile():
     cleantempfiles()
-    tempdir = "./tmp/"
+    tempdir = "/mntp-data/tmp/"
     if not (os.path.exists(tempdir)):
         os.makedirs(tempdir)
     if not (os.path.isdir(tempdir)):
@@ -107,7 +112,7 @@ def maketempfile():
     return tmpfilename
 
 def cleantempfiles():
-    tempdir = "./tmp/"
+    tempdir = "/mntp-data/tmp/"
     if os.path.exists(tempdir):
         for entry in os.scandir(tempdir):
             if entry.is_file():
