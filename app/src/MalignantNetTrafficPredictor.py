@@ -255,11 +255,13 @@ class MalignantNetTrafficPredictor:
         self.__load__model_file(filepath)
 
     def load_user_model(self, filename):
-        filepath = "./mntp-data/models_user/" + filename + ".model"
+        filepath = "/mntp-data/models_user/" + filename + ".model"
         self.__load__model_file(filepath)
 
     def save_model(self, name, desc, filename):
-        user_model_path = "./mntp-data/models_user/"
+        if os.path.basename(filename) != filename:
+            raise ValueError(f"You must specify only a filename, not a path.")
+        user_model_path = "/mntp-data/models_user/"
         if not(os.path.exists(user_model_path)):
             os.makedirs(user_model_path)
         if not(os.path.isdir(user_model_path)):
@@ -283,3 +285,20 @@ class MalignantNetTrafficPredictor:
         self.__get_model_from_repo(name)
         self.load_official_model(name)
 
+    @staticmethod
+    def list_available_models():
+        model_list = {}
+        tmp_model = MalignantNetTrafficPredictor()
+        for entry in os.scandir("./models"):
+            if entry.name.endswith(".model"):
+                filename = str(os.path.basename(entry.name)).removesuffix(".model")
+                tmp_model.load_official_model(filename)
+                model_list[tmp_model.model_name] = { "type": "official", "name": tmp_model.model_name,
+                                                     "desc": tmp_model.model_description, "filename": filename}
+        for entry in os.scandir("/mntp-data/models_user"):
+            if str(entry.name).endswith(".model"):
+                filename = str(os.path.basename(entry.name)).removesuffix(".model")
+                tmp_model.load_user_model(filename)
+                model_list[tmp_model.model_name] = { "type": "user", "name": tmp_model.model_name,
+                                                     "desc": tmp_model.model_description, "filename": filename}
+        return model_list

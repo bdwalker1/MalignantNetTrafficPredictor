@@ -1,6 +1,7 @@
 import os, time
 import tempfile as __tempfile
 from io import StringIO
+import json
 # import numpy as np
 from fastapi import FastAPI
 # from fastapi.responses import StreamingResponse
@@ -13,29 +14,39 @@ import src.MNTP_Website as web
 
 api = FastAPI()
 
-@api.get("/", response_class=HTMLResponse)
+net_predictor = MalignantNetTrafficPredictor()
+model_loaded = False
+
+@api.get("/", name="API Demo Page", response_class=HTMLResponse)
 async def root():
     return web.landing_page()
 
-@api.post("/getlatestmodel/")
+@api.post("/listmodels/", name="List Available Models", description="List all the models currently available in the container.")
+async def list_models():
+    dictModels = net_predictor.list_available_models()
+        # strList += F"{entry["name"]} - {entry["desc"]} ({entry.name})\n")
+    return json.dumps(dictModels, indent=2)
+
+@api.post("/getlatestmodel/", name="Get Latest Model", description="Get the latest model from the official GitHub repository.")
 async def getlatestmodel():
-    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+    global model_loaded
     try:
         net_predictor.retrieve_latest_model()
+        model_loaded = True
         print(F"Model name: {net_predictor.model_name}")
         print(F"Description: {net_predictor.model_description}")
-        net_predictor.save_model("user_model-v0.1",F"Copy of {net_predictor.model_name}", "user_model-v0.1")
         return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
     except Exception as e:
         return {"error": F"Failed to retrieve latest model. Ensure api container has access to "
                          F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
                          F". Details: {str(e)}"}
 
-@api.post("/getmodelversion/")
+@api.post("/getmodelversion/", name="Get Specific Model Version", description="Get a specific model version from the official GitHub repository.")
 async def get_modelversion(name: str):
-    net_predictor = MalignantNetTrafficPredictor(n_estimators=10, learning_rate=1.0, max_depth=4)
+    global model_loaded
     try:
         net_predictor.retrieve_named_model(name)
+        model_loaded = True
         print(F"Model name: {net_predictor.model_name}")
         print(F"Description: {net_predictor.model_description}")
         return {"message": F"Retrieved model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
@@ -44,13 +55,42 @@ async def get_modelversion(name: str):
                          F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/ "
                          F"and that your api container has access to that site. Details: {str(e)}"}
 
-@api.post("/predictfromjson/")
+@api.post("/savemodel/", name="Save Current Model", description="Save the current model to the user models folder.")
+async def save_model(name: str, desc: str, filename: str):
+    global model_loaded
+    if not(model_loaded):
+        return {"error": "You need have an active model before you can save."}
+    try:
+        net_predictor.save_model(name, desc, filename)
+        return {"message": F"Saved model - Name: {name}; Description: {desc}"}
+    except Exception as e:
+        return {"error": F"Failed to save model. {e}"}
+
+@api.post("/loadofficialmodel/", name="Load Official Model", description="Load a model that has been downloaded from official repository.")
+async def load_official_model(filename: str):
+    global model_loaded
+    try:
+        net_predictor.load_official_model(filename)
+        model_loaded = True
+        return {"message": F"Loaded model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    except Exception as e:
+        return {"error": F"Failed to load model. {e}"}
+
+@api.post("/loadusermodel/", name="Load a User-Saved Model", description="Load a specific user-saved model.")
+async def load_user_model(filename: str):
+    global model_loaded
+    try:
+        net_predictor.load_user_model(filename)
+        model_loaded = True
+        return {"message": F"Loaded model - Name: {net_predictor.model_name}; Description: {net_predictor.model_description}"}
+    except Exception as e:
+        return {"error": F"Failed to load model. {e}"}
+
+@api.post("/predictfromjson/", name="Predict from JSON Text", description="Make predictions from a JSON text string.")
 async def predictfromjson(json_str: str):
-    net_predictor = MalignantNetTrafficPredictor()
-    print("Loading model from file...")
-    net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
-    print(F"Model name: {net_predictor.model_name}")
-    print(F"Description: {net_predictor.model_description}")
+    global model_loaded
+    if not(model_loaded):
+        return {"error": "You need to load a model before you can predict."}
     empty_df = pd.DataFrame([], columns=net_predictor.INPUT_FILE_COLS)
     try:
         input_df = pd.read_json(StringIO(json_str))
@@ -74,12 +114,9 @@ async def predictfromjson(json_str: str):
 
 @api.post("/predictfromfile/")
 async def predictfromfile(fileurl: str):
-    net_predictor = MalignantNetTrafficPredictor()
-    print("Loading model from file...")
-    net_predictor.load_official_model("MalignantNetTrafficPredictor-latest")
-    print(F"Model name: {net_predictor.model_name}")
-    print(F"Description: {net_predictor.model_description}")
-
+    global model_loaded
+    if not(model_loaded):
+        return {"error": "You need to load a model before you can predict."}
     output_df = net_predictor.predictfromfile(fileurl)
     try:
         outputpath = maketempfile()
@@ -91,11 +128,9 @@ async def predictfromfile(fileurl: str):
 
 @api.post("/predictfile2file/")
 async def predictfile2file(inputurl: str, outputurl: str):
-    net_predictor = MalignantNetTrafficPredictor()
-    print("Loading model from file...")
-    net_predictor.load_official_model("MalignantNetTrafficPredictor-v0.1")
-    print(F"Model name: {net_predictor.model_name}")
-    print(F"Description: {net_predictor.model_description}")
+    global model_loaded
+    if not(model_loaded):
+        return {"error": "You need to load a model before you can predict."}
     _ = net_predictor.predict_to_file(inputurl,outputurl)
     return {"mesage": F"Predictions written to {outputurl}."}
 
@@ -122,6 +157,7 @@ def cleantempfiles():
                     os.remove(entry.path)
 
 if __name__ == "__main__":
+    cleantempfiles()
     uvicorn.run(api, host="0.0.0.0", port=8000)
 
 # if __name__ == '__main__':
