@@ -9,6 +9,7 @@ demo = FastAPI()
 demo.mount("/static", StaticFiles(directory="./webpage"), name="webpage")
 
 # __api_url = "http://mntp-api.hopto.me"
+# __api_url = "http://mntp1.westus2.azurecontainer.io"
 __api_url = "http://127.0.0.1:8000"
 
 @demo.get("/", name="API Demo Page", response_class=HTMLResponse)

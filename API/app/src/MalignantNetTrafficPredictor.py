@@ -180,6 +180,15 @@ class MalignantNetTrafficPredictor:
         print(f"Input data shape: {load_df.shape}")
         return load_df
 
+    @staticmethod
+    def __verify_expected_storage_dirs():
+        user_model_dir = '/mntp-data/models_user/'
+        if not(os.path.exists(user_model_dir)):
+            os.makedirs(user_model_dir)
+        output_dir = '/mntp-data/output/'
+        if not(os.path.exists(output_dir)):
+            os.makedirs(output_dir)
+
     def train(self, filepath):
         self.__load_trainingfile(filepath)
         self.__training_df = self.__preprocess(self.__training_df, train=True)
@@ -287,6 +296,7 @@ class MalignantNetTrafficPredictor:
             raise ValueError(f"You must specify only a filename, not a path.")
         if filename.endswith(".model"):
             filename = str(os.path.basename(filename)).removesuffix(".model")
+        self.__verify_expected_storage_dirs()
         user_model_path = "/mntp-data/models_user/"
         if not(os.path.exists(user_model_path)):
             os.makedirs(user_model_path)
@@ -312,8 +322,8 @@ class MalignantNetTrafficPredictor:
         self.load_official_model(name)
         return
 
-    @staticmethod
-    def list_available_models():
+    def list_available_models(self):
+        self.__verify_expected_storage_dirs()
         print(F"Listing available models...")
         model_list = {}
         tmp_model = MalignantNetTrafficPredictor()

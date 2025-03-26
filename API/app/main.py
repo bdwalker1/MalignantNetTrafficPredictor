@@ -4,7 +4,7 @@ import tempfile as __tempfile
 from io import StringIO
 import json
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 import uvicorn
 import pandas as pd
 # from src.SimpleTimer import SimpleTimer
@@ -104,7 +104,10 @@ async def loadusermodel(filename: str):
         print(F"Failed to load model. {e}")
         return {"error": F"Failed to load model. {e}"}
 
-@api.post("/predictfromjson/", name="Predict from JSON Text", description="Make predictions from a JSON text string.")
+@api.post("/predictfromjson/",
+          name="Predict from JSON Text",
+          description="Make predictions from a JSON text string.",
+          response_class=JSONResponse)
 async def predictfromjson(json_str: str):
     global model_loaded
     if not(model_loaded):
@@ -124,6 +127,7 @@ async def predictfromjson(json_str: str):
                 input_df[col] = input_df[col].astype(net_predictor.INPUT_FILE_COLS[col])
             print(input_df.dtypes)
             output_df = net_predictor.predict(input_df)
+            print("Returning:" + str(output_df.to_json()))
             return output_df.to_json()
         else:
             return { "Error": "Columns do not match expected input schema."}
@@ -157,7 +161,8 @@ async def createandtrainmodel(name: str, description: str, n_estimators: int, le
     global model_loaded, net_predictor
     net_predictor = MalignantNetTrafficPredictor(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth)
     net_predictor.model_name = name
-    net_predictor.model_description = description + "(estimators: " + str(n_estimators) + ", learning_rate: " + str(learning_rate) + ", max_depth: " + str(max_depth) + ")"
+    description = description + "(estimators: " + str(n_estimators) + ", learning_rate: " + str(learning_rate) + ", max_depth: " + str(max_depth) + ")"
+    net_predictor.model_description = description
     net_predictor.train(trainingdataurl)
     model_loaded = True
     net_predictor.save_model(name, description, make_filename(name))
