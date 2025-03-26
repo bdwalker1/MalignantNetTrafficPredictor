@@ -80,6 +80,7 @@ class MalignantNetTrafficPredictor:
                                                       random_state=self.__random_state)
         self.model_name = ""
         self.model_description = ""
+        return
 
     @staticmethod
     def __downlaod_file(url, local_filepath):
@@ -92,6 +93,7 @@ class MalignantNetTrafficPredictor:
             print(F"File {url} downloaded to {local_filepath}")
         except requests.exceptions.RequestException as e:
             raise Exception(F"Failed to retrieve file. Error occurred: {e}")
+        return
 
     def __get_model_from_repo(self, model_name):
         repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
@@ -104,6 +106,7 @@ class MalignantNetTrafficPredictor:
             self.__downlaod_file(request_url, local_model_path)
         except Exception as e:
             raise Exception(F"Failed to download model. Error occurred: {e}")
+        return
 
     def __onehot_encode(self, colname, df, train=False):
         if colname not in df.columns:
@@ -183,6 +186,7 @@ class MalignantNetTrafficPredictor:
         y = self.__training_df["target"]
         x = self.__training_df.drop("target", axis=1)
         self.__predictor.fit(x, y)
+        return
 
     def predictfromfile(self, filepath: str):
         # Load file(s) / Verify data format
@@ -249,14 +253,17 @@ class MalignantNetTrafficPredictor:
         self.model_description = loaded_model['desc']
         self.__predictor = loaded_model['model']
         self.__encoders = loaded_model['encoders']
+        return
 
     def load_official_model(self, filename):
         filepath = "./models/" + filename + ".model"
         self.__load__model_file(filepath)
+        return
 
     def load_user_model(self, filename):
         filepath = "/mntp-data/models_user/" + filename + ".model"
         self.__load__model_file(filepath)
+        return
 
     def save_model(self, name, desc, filename):
         if os.path.basename(filename) != filename:
@@ -273,20 +280,41 @@ class MalignantNetTrafficPredictor:
         model_to_save['model'] = self.__predictor
         model_to_save['encoders'] = self.__encoders
         joblib.dump(model_to_save, filepath)
+        return
+
+    def delete_model(self, filename):
+        if os.path.basename(filename) != filename:
+            raise ValueError(f"You must specify only a filename, not a path.")
+        if filename.endswith(".model"):
+            filename = str(os.path.basename(filename)).removesuffix(".model")
+        user_model_path = "/mntp-data/models_user/"
+        if not(os.path.exists(user_model_path)):
+            os.makedirs(user_model_path)
+        if not(os.path.isdir(user_model_path)):
+            raise NotADirectoryError(f"{user_model_path} is not a directory")
+        filepath = user_model_path + filename + ".model"
+        if not(os.path.exists(filepath)):
+            raise FileNotFoundError(f"{filepath} does not exist")
+        os.remove(filepath)
+        return
 
     def clear_model(self):
         self.__predictor = None
         self.__encoders = None
+        return
 
     def retrieve_latest_model(self):
         self.retrieve_named_model("MalignantNetTrafficPredictor-latest")
+        return
 
     def retrieve_named_model(self, name: str):
         self.__get_model_from_repo(name)
         self.load_official_model(name)
+        return
 
     @staticmethod
     def list_available_models():
+        print(F"Listing available models...")
         model_list = {}
         tmp_model = MalignantNetTrafficPredictor()
         for entry in os.scandir("./models"):

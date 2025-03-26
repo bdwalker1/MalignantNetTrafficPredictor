@@ -9,7 +9,5 @@ RUN pip install --no-cache-dir --upgrade -r /mntp/requirements.txt
 
 COPY ./app /mntp/app
 COPY ./models /mntp/models
-COPY ./webpage /mntp/webpage
-RUN mkdir -p ./models_user
 
 ENTRYPOINT ["python", "./app/main.py"]
