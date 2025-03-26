@@ -1,4 +1,5 @@
 import os, time
+import re
 import tempfile as __tempfile
 from io import StringIO
 import json
@@ -16,7 +17,7 @@ model_loaded = False
 
 @api.get("/", name="API Demo Page", response_class=HTMLResponse)
 async def root():
-    return web.landing_page()
+    return HTMLResponse("Welcome to Malignant Net Traffic Predictor")
 
 @api.post("/listmodels/", name="List Available Models",
           description="List all the models currently available in the container.")
@@ -72,7 +73,7 @@ async def save_model(name: str, desc: str, filename: str):
     except Exception as e:
         return {"error": F"Failed to save model. {e}"}
 
-@api.post("/deletemodel/", name="Save Current Model", description="Save the current model to the user models folder.")
+@api.post("/deletemodel/", name="Delete a User-saved Model", description="Delete a user-saved model based on filename.")
 async def delete_model(filename: str):
     try:
         net_predictor.delete_model(filename)
@@ -151,6 +152,17 @@ async def predictfile2file(inputurl: str, outputurl: str):
     _ = net_predictor.predict_to_file(inputurl,outputurl)
     return {"mesage": F"Predictions written to {outputurl}."}
 
+@api.post("/createandtrainmodel/")
+async def createandtrainmodel(name: str, description: str, n_estimators: int, learning_rate: float, max_depth: int, trainingdataurl: str):
+    global model_loaded, net_predictor
+    net_predictor = MalignantNetTrafficPredictor(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth)
+    net_predictor.model_name = name
+    net_predictor.model_description = description + "(estimators: " + str(n_estimators) + ", learning_rate: " + str(learning_rate) + ", max_depth: " + str(max_depth) + ")"
+    net_predictor.train(trainingdataurl)
+    model_loaded = True
+    net_predictor.save_model(name, description, make_filename(name))
+    return {"message": "New model created, trained, and saved."}
+
 def maketempfile():
     cleantempfiles()
     tempdir = "/mntp-data/tmp/"
@@ -173,6 +185,22 @@ def cleantempfiles():
                 if file_age > 10:
                     os.remove(entry.path)
 
+
+def make_filename(s):
+    """
+    Transforms a string into a valid filename by replacing invalid characters with underscores and removing leading/trailing spaces.
+
+    Args:
+        s: The input string.
+
+    Returns:
+        A valid filename string.
+    """
+    s = str(s).strip()
+    s = re.sub(r'[\\/*?:"<>|]', "_", s)
+    return s
+
+
 if __name__ == "__main__":
     cleantempfiles()
-    uvicorn.run(api, host="0.0.0.0", port=8000)
+    uvicorn.run(api, host="0.0.0.0", port=80)

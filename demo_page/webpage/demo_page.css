@@ -39,6 +39,9 @@ select {
 option {
   text-size: 150%;
 }
+button {
+  margin: 4px;
+}
 .container {
   border: 8px solid #006400; /* dark green */
   margin: 20px auto;
