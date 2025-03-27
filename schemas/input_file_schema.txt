@@ -1,14 +1,14 @@
-Field Name		Type	Description
---------------	------  -----------------------------------------
-ts				float64	The timestamp of the connection event (unix timestamp)
-uid				string	A unique identifier for the connection event.
-id.orig_p		int32	The source port.
-id.resp_p		int32	The destination port.
-proto			string	The network protocol used (e.g., 'tcp').
-service			string	The service associated with the connection.
-conn_state		string	The state of the connection.
-history			string	A history of connection states.
-orig_pkts		int32	The number of packets sent from the source to the destination.
-orig_ip_bytes	int32	The number of IP bytes sent from the source to the destination.
-resp_pkts		int32	The number of packets sent from the destination to the source.
-resp_ip_bytes   int32	The number of IP bytes sent from the destination to the source.
+Field Name      Type      Description
+--------------	------    -----------------------------------------
+ts              float64	  The timestamp of the connection event (unix timestamp)
+uid				      string    A unique identifier for the connection event.
+id.orig_p		    int32	    The source port.
+id.resp_p		    int32	    The destination port.
+proto			      string	  The network protocol used (e.g., 'tcp').
+service			    string	  The service associated with the connection.
+conn_state		  string	  The state of the connection.
+history			    string	  A history of connection states.
+orig_pkts		    int32	    The number of packets sent from the source to the destination.
+orig_ip_bytes	  int32	    The number of IP bytes sent from the source to the destination.
+resp_pkts		    int32	    The number of packets sent from the destination to the source.
+resp_ip_bytes   int32	    The number of IP bytes sent from the destination to the source.
