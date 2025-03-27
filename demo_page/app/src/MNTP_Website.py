@@ -3,7 +3,7 @@ import requests
 import json
 from fastapi.responses import HTMLResponse
 
-__api_url = "http://mntp-api.hopto.me"
+__api_url = ""
 
 def html_page( title: str, content: str ):
     html_output = F"""

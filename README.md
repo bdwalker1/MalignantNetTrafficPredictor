@@ -26,22 +26,39 @@ deployment working on their personal workstation.
 **Prerequisites:**
 - Git (https://git-scm.com/downloads)
 - Docker (https://www.docker.com/products/docker-desktop/)
-- Blah
+- Python v3.12
 
 **Steps**
 1) Open a terminal window and navigate to a folder where you wish to install the repository.
+
 2) Clone this repository with the following `git` command:
+
     `git clone https://github.com/bdwalker1/MalignantNetTrafficPredictor.git`
+
 3) Navigate to the API folder:
+
     `cd ./MalignantNetTrafficPredictor/API`
+
 4) Build and run the API Docker container (Docker engine must be running):
-   a) `docker build -t tag-mntp-api .`
-   b) `docker run -d --name mntp-api -p 8000:8000 tag-mntp-api`
+
+    a) `docker build -t tag-mntp-api .`
+
+    b) `docker run -d --name mntp-api -p 8000:8000 tag-mntp-api`
+
 5) Navigate to the demo_page folder:
+
     `cd ../demo_page`
-6) Build and run the demonstration web application:
-   a) `docker build -t tag-mntp-demo .`
-   b) `docker run -d --name mntp-demo -p 80:80 tag-mntp-demo`
+
+6) Install the required packages for the web application
+
+   `pip install -r ./requirements.txt`
+
+7) Run the demonstration web application:
+
+    a) `docker build -t tag-mntp-demo .`
+
+    b) `docker run -d --name mntp-demo -p 80:80 tag-mntp-demo`
+
 7) Open a web browser and go to `http://127.0.0.1/`
 
 ## Additional Information:
