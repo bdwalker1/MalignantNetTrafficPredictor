@@ -134,7 +134,9 @@ async def predictfromjson(json_str: str):
     except Exception as e:
         return {"error": F"Exception occurred: {e}"}
 
-@api.post("/predictfromfile/")
+@api.post("/predictfromfile/",
+          name="Predict from Input File",
+          description="Make predictions from an input file. The file path/url must be accessible to the API.")
 async def predictfromfile(fileurl: str):
     global model_loaded
     if not(model_loaded):
@@ -148,7 +150,10 @@ async def predictfromfile(fileurl: str):
     except Exception as e:
         return {"error": F"There was an error returning your results: {e}"}
 
-@api.post("/predictfile2file/")
+@api.post("/predictfile2file/",
+          name="Predict from Input File and Output to a File ",
+          description=("Make predictions from an input file then save predictions to an output file. "
+                      "Both the input and output file paths/urls must be accessible to the API."))
 async def predictfile2file(inputurl: str, outputurl: str):
     global model_loaded
     if not(model_loaded):
@@ -159,7 +164,9 @@ async def predictfile2file(inputurl: str, outputurl: str):
     except Exception as e:
         return {"error": F"There was an error returning your results: {e}"}
 
-@api.post("/createandtrainmodel/")
+@api.post("/createandtrainmodel/",
+          name="Create and Train a New Model Version",
+          description="Specify parameters to create a new version of the model and train it with a specified training data file.")
 async def createandtrainmodel(name: str, description: str, n_estimators: int, learning_rate: float, max_depth: int, trainingdataurl: str):
     global model_loaded, net_predictor
     try:

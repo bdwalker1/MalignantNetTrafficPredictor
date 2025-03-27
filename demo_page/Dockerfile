@@ -1,6 +1,9 @@
 FROM python:3.12
 LABEL authors="Bruce Walker"
 
+ARG APIURL
+ENV API_URL="$APIURL"
+
 WORKDIR /demo_page
 
 COPY ./requirements.txt /demo_page/requirements.txt

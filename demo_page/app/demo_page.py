@@ -1,3 +1,4 @@
+import os
 import json
 from fastapi import FastAPI, Request
 import uvicorn
@@ -9,8 +10,10 @@ import requests
 demo = FastAPI()
 demo.mount("/static", StaticFiles(directory="./webpage"), name="webpage")
 
-__api_url = "http://mntp-api.hopto.me"
-# __api_url = "http://127.0.0.1:8000"
+__api_url = os.environ.get("API_URL")
+if not(__api_url):
+    __api_url = "http://127.0.0.1:8000"
+# __api_url = "http://mntp-api.hopto.me"
 
 @demo.get("/", name="API Demo Page", response_class=HTMLResponse)
 async def root(request: Request):

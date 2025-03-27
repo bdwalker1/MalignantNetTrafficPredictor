@@ -127,7 +127,9 @@ def model_creator():
     str_creator += "<label for='n_estimators'>Estimators: </label><input type='number' name='n_estimators' value='1' size=3 min=1 max=20 /><br>"
     str_creator += "<label for='learning_rate'>Learning Rate: </label><input type='number' name='learning_rate' value='1.0' size=3 min=0.1 max=1.5 step=0.1 /><br>"
     str_creator += "<label for='max_depth'>Max Depth: </label><input type='number' name='max_depth' value='1' size=3 min=1 max=15 /><br>"
-    str_creator += "<label for='trainingdataurl'>Training file URL: </label><input type='url' name='trainingdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/master/data/MalwareDetectionInNetworkTrafficData/training/NTAMalignantTrafficPredictor_Training.csv?download=' size=150 maxlength=200 /><br>"
+    str_creator += ("<label for='trainingdataurl'>Training file URL: </label><input type='url' name='trainingdataurl' "
+                    "value='https://github.com/bdwalker1/MalignantNetTrafficPredictor_Data/raw/refs/heads/main/training/MalignantNetTrafficPredictor_Training.csv?download='"
+                    " size=150 maxlength=200 /><br>")
     str_creator += "<input type='submit' value='Make Model' />"
     str_creator += "</form><br></div>"
     return str_creator
@@ -308,8 +310,11 @@ def predict_from_json():
 def predict_from_file():
     str_section = "<div id=\"predict_from_json\"><h2>Predict from input file:</h2><br>"
     str_section += "<form id='form_predict_from_file' action='javascript:;' onsubmit='predict_from_file(this);' >"
-    str_section += "<label for='inputdataurl'>Path/URL to input file: </label>"
-    str_section += "<input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/main/data/MalwareDetectionInNetworkTrafficData/testing/MalignantNetTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
+    str_section += ("<label for='inputdataurl'>Path/URL to input file:  (<b>Note:</b> File location must be accessible to the "
+                    "machine/system the API is running on.)</label>")
+    str_section += ("<input type='text' name='inputdataurl' "
+                    "value='https://github.com/bdwalker1/MalignantNetTrafficPredictor_Data/raw/refs/heads/main/testing/MalignantNetTrafficPredictor_Testing.csv?download=' "
+                    "size=150 maxlength=200 /><br>")
     str_section += "<input type='submit' value='Get Predictions' />"
     str_section += "</form><br>"
     str_section += ("<iframe id=\"file_predictions\" name=\"file_predictions\" "
@@ -320,9 +325,13 @@ def predict_from_file():
 def predict_file2file():
     str_section = "<div id=\"predict_file2file\"><h2>Predict from input file to output file:</h2><br>"
     str_section += "<form id='form_predict_file2file' action='javascript:;' onsubmit='predict_file2file(this);' >"
-    str_section += "<label for='inputdataurl'>Path/URL to input file: </label>"
-    str_section += "<input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/main/data/MalwareDetectionInNetworkTrafficData/testing/MalignantNetTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
-    str_section += "<label for='outputurl'>Path/URL to output file: </label>"
+    str_section += ("<label for='inputdataurl'>Path/URL to input file: (<b>Note:</b> File location must be accessible to the "
+                    "machine/system the API is running on.)</label>")
+    str_section += ("<input type='text' name='inputdataurl' "
+                    "value='https://github.com/bdwalker1/MalignantNetTrafficPredictor_Data/raw/refs/heads/main/testing/MalignantNetTrafficPredictor_Testing.csv?download=' "
+                    "size=150 maxlength=200 /><br>")
+    str_section += ("<label for='outputurl'>Path/URL to output file:  (<b>Note:</b> File location must be accessible to the "
+                    "machine/system the API is running on.)</label>")
     str_section += "<input type='text' name='outputurl' value='/mntp-data/output/predictions.txt' size=150 maxlength=200 /><br>"
     str_section += "<input type='submit' value='Get Predictions' />"
     str_section += "</form><br>"
