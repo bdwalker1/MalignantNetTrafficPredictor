@@ -36,7 +36,7 @@ deployment working on their personal workstation.
     `cd ./MalignantNetTrafficPredictor/API`
 4) Build and run the API Docker container (Docker engine must be running):
    a) `docker build -t tag-mntp-api .`
-   b) `docker run -d --name mntp-api -p 8000:80 tag-mntp-api`
+   b) `docker run -d --name mntp-api -p 8000:8000 tag-mntp-api`
 5) Navigate to the demo_page folder:
     `cd ../demo_page`
 6) Build and run the demonstration web application:
