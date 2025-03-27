@@ -61,11 +61,11 @@ def landing_page(api_url: str):
                 </div>
                 <!-- Tab 4 Content -->
                 <div id="tab4" class="tab-content">
-                    {model_creator()}
+                    {predict_from_file()}
                 </div>
                 <!-- Tab 5 Content -->
                 <div id="tab5" class="tab-content">
-                    {model_creator()}
+                    {predict_file2file()}
                 </div>
             </div>
         </div>
@@ -133,9 +133,8 @@ def model_creator():
     return str_creator
 
 def predict_from_json():
-    global __api_url
     str_section = "<div id=\"predict_from_json\"><h2>Predict from JSON string:</h2><br>"
-    str_section += "<form id='form_predict_from_json' action='javascript:;' onsubmit='predict_from_json(\"" + __api_url + "\",this);' >"
+    str_section += "<form id='form_predict_from_json' action='javascript:;' onsubmit='predict_from_json(this);' >"
     str_section += "<label for='json_string'>JSON String: </label></br>"
     str_section += "<textarea id=\"json_string\" name=\"json_string\" rows=\"10\" cols=\"80\">"
     str_section += """
@@ -301,7 +300,31 @@ def predict_from_json():
     str_section += "</textarea><br>"
     str_section += "<input type='submit' value='Get Predictions' />"
     str_section += "</form><br>"
-    str_section += "<div id=\"json_predictions\"></div><br>"
+    str_section += ("<iframe id=\"json_predictions\" name=\"json_predictions\" "
+                    "class=\"results\" src=\"/blank\" ></iframe>")
+    str_section += "</div>"
+    return str_section
+
+def predict_from_file():
+    str_section = "<div id=\"predict_from_json\"><h2>Predict from input file:</h2><br>"
+    str_section += "<form id='form_predict_from_file' action='javascript:;' onsubmit='predict_from_file(this);' >"
+    str_section += "<label for='inputdataurl'>Path/URL to input file: </label><input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/master/data/MalwareDetectionInNetworkTrafficData/testing/NTAMalignantTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
+    str_section += "<input type='submit' value='Get Predictions' />"
+    str_section += "</form><br>"
+    str_section += ("<iframe id=\"file_predictions\" name=\"file_predictions\" "
+                    "class=\"results\" src=\"/blank\" ></iframe>")
+    str_section += "</div>"
+    return str_section
+
+def predict_file2file():
+    str_section = "<div id=\"predict_file2file\"><h2>Predict from input file to output file:</h2><br>"
+    str_section += "<form id='form_predict_file2file' action='javascript:;' onsubmit='predict_file2file(this);' >"
+    str_section += "<label for='inputdataurl'>Path/URL to input file: </label><input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/master/data/MalwareDetectionInNetworkTrafficData/testing/NTAMalignantTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
+    str_section += "<label for='outputurl'>Path/URL to output file: </label><input type='text' name='outputurl' value='/mntp-data/output/predictions.txt' size=150 maxlength=200 /><br>"
+    str_section += "<input type='submit' value='Get Predictions' />"
+    str_section += "</form><br>"
+    str_section += ("<iframe id=\"file2file_results\" name=\"file2file_results\" "
+                    "class=\"results\" src=\"/blank\" ></iframe>")
     str_section += "</div>"
     return str_section
 

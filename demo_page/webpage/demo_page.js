@@ -80,16 +80,60 @@ function model_creator(base_url, form) {
 //     document.getElementById("json_predictions").innerHTML = response.json();
 // }
 
-function predict_from_json(base_url, jsonform) {
+function predict_from_json(jsonform) {
 
-    load_url = base_url + "/predictfromjson/?json_str=" + encodeURI(jsonform.json_string.value.replace(/\r?\n|\t/g, ""));
+    load_url = "/apicall/?endpoint=predictfromjson&qstring=" +
+        encodeURI("json_str=" + encodeURI(jsonform.json_string.value.replace(/\r?\n|\t/g, "")));
     const form = document.createElement("form");
     form.method = "POST";
     form.action = load_url;
-    form.target = "_blank";
+    form.target = "json_predictions";
+    form.style.display = "none";
+    document.getElementById("json_predictions").onload = function () {json_loaded("json_predictions");}
+    document.getElementById("json_predictions").contentDocument.body.innerHTML = "<pre>Working...</pre>";
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+}
+
+function predict_from_file(pffform) {
+
+    load_url = "/apicall/?endpoint=predictfromfile&qstring=" +
+        encodeURI("fileurl=" + encodeURI(pffform.inputdataurl.value));
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = load_url;
+    form.target = "file_predictions";
+    form.style.display = "none";
+    document.getElementById("file_predictions").onload = function () {json_loaded("file_predictions");}
+    document.getElementById("file_predictions").contentDocument.body.innerHTML = "<pre>Working...</pre>";
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function predict_file2file(f2fform) {
+
+    load_url = "/apicall/?endpoint=predictfile2file&qstring=" +
+        encodeURI("inputurl=" + encodeURI(f2fform.inputdataurl.value) + "%26outputurl=" + encodeURI(f2fform.outputurl.value));
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = load_url;
+    form.target = "file2file_results";
+    form.style.display = "none";
+    document.getElementById("file_predictions").onload = function () {json_loaded("file2file_results");}
+    document.getElementById("file2file_results").contentDocument.body.innerHTML = "<pre>Working...</pre>";
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function json_loaded(frameid) {
+    frame = document.getElementById(frameid);
+    framedoc = "Fred";
+    if (frame.contentDocument)
+        framedoc = frame.contentDocument;
+    frameText = framedoc.documentElement.textContent;
 }
 
 function openTab(tabId) {

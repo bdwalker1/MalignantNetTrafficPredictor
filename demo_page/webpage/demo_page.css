@@ -147,3 +147,7 @@ img.logo {
 .tab-content.active {
     display: block;
 }
+iframe.results {
+    background-color: #FAFAFA;
+    width: 95%;
+}

@@ -154,7 +154,7 @@ async def predictfile2file(inputurl: str, outputurl: str):
     if not(model_loaded):
         return {"error": "You need to load a model before you can predict."}
     _ = net_predictor.predict_to_file(inputurl,outputurl)
-    return {"mesage": F"Predictions written to {outputurl}."}
+    return {"message": F"Predictions written to {outputurl}."}
 
 @api.post("/createandtrainmodel/")
 async def createandtrainmodel(name: str, description: str, n_estimators: int, learning_rate: float, max_depth: int, trainingdataurl: str):
