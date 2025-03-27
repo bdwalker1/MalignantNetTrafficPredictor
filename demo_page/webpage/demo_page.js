@@ -106,7 +106,7 @@ function predict_from_file(pffform) {
     form.target = "file_predictions";
     form.style.display = "none";
     document.getElementById("file_predictions").onload = function () {json_loaded("file_predictions");}
-    document.getElementById("file_predictions").contentDocument.body.innerHTML = "<pre>Working...</pre>";
+    document.getElementById("file_predictions").contentDocument.body.innerHTML = "<pre>Working... Results will open as download file when ready.</pre>";
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);

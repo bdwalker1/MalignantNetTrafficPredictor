@@ -308,7 +308,8 @@ def predict_from_json():
 def predict_from_file():
     str_section = "<div id=\"predict_from_json\"><h2>Predict from input file:</h2><br>"
     str_section += "<form id='form_predict_from_file' action='javascript:;' onsubmit='predict_from_file(this);' >"
-    str_section += "<label for='inputdataurl'>Path/URL to input file: </label><input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/master/data/MalwareDetectionInNetworkTrafficData/testing/NTAMalignantTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
+    str_section += "<label for='inputdataurl'>Path/URL to input file: </label>"
+    str_section += "<input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/main/data/MalwareDetectionInNetworkTrafficData/testing/MalignantNetTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
     str_section += "<input type='submit' value='Get Predictions' />"
     str_section += "</form><br>"
     str_section += ("<iframe id=\"file_predictions\" name=\"file_predictions\" "
@@ -319,8 +320,10 @@ def predict_from_file():
 def predict_file2file():
     str_section = "<div id=\"predict_file2file\"><h2>Predict from input file to output file:</h2><br>"
     str_section += "<form id='form_predict_file2file' action='javascript:;' onsubmit='predict_file2file(this);' >"
-    str_section += "<label for='inputdataurl'>Path/URL to input file: </label><input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/master/data/MalwareDetectionInNetworkTrafficData/testing/NTAMalignantTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
-    str_section += "<label for='outputurl'>Path/URL to output file: </label><input type='text' name='outputurl' value='/mntp-data/output/predictions.txt' size=150 maxlength=200 /><br>"
+    str_section += "<label for='inputdataurl'>Path/URL to input file: </label>"
+    str_section += "<input type='text' name='inputdataurl' value='https://github.com/bdwalker1/UCSD_MLE_Bootcamp_Capstone/raw/refs/heads/main/data/MalwareDetectionInNetworkTrafficData/testing/MalignantNetTrafficPredictor_Testing.csv?download=' size=150 maxlength=200 /><br>"
+    str_section += "<label for='outputurl'>Path/URL to output file: </label>"
+    str_section += "<input type='text' name='outputurl' value='/mntp-data/output/predictions.txt' size=150 maxlength=200 /><br>"
     str_section += "<input type='submit' value='Get Predictions' />"
     str_section += "</form><br>"
     str_section += ("<iframe id=\"file2file_results\" name=\"file2file_results\" "

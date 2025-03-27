@@ -139,8 +139,8 @@ async def predictfromfile(fileurl: str):
     global model_loaded
     if not(model_loaded):
         return {"error": "You need to load a model before you can predict."}
-    output_df = net_predictor.predictfromfile(fileurl)
     try:
+        output_df = net_predictor.predictfromfile(fileurl)
         outputpath = maketempfile()
         output_df.to_csv(path_or_buf=outputpath, sep="|", lineterminator="\n", index=False)
         response = FileResponse(path=outputpath, filename="predictions.csv", media_type="application/csv")
@@ -153,20 +153,30 @@ async def predictfile2file(inputurl: str, outputurl: str):
     global model_loaded
     if not(model_loaded):
         return {"error": "You need to load a model before you can predict."}
-    _ = net_predictor.predict_to_file(inputurl,outputurl)
-    return {"message": F"Predictions written to {outputurl}."}
+    try:
+        _ = net_predictor.predict_to_file(inputurl,outputurl)
+        return {"message": F"Predictions written to {outputurl}."}
+    except Exception as e:
+        return {"error": F"There was an error returning your results: {e}"}
 
 @api.post("/createandtrainmodel/")
 async def createandtrainmodel(name: str, description: str, n_estimators: int, learning_rate: float, max_depth: int, trainingdataurl: str):
     global model_loaded, net_predictor
-    net_predictor = MalignantNetTrafficPredictor(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth)
-    net_predictor.model_name = name
-    description = description + "(estimators: " + str(n_estimators) + ", learning_rate: " + str(learning_rate) + ", max_depth: " + str(max_depth) + ")"
-    net_predictor.model_description = description
-    net_predictor.train(trainingdataurl)
-    model_loaded = True
-    net_predictor.save_model(name, description, make_filename(name))
-    return {"message": "New model created, trained, and saved."}
+    try:
+        if name == "":
+            raise Exception("Name cannot be empty.")
+        if description == "":
+            raise Exception("Description cannot be empty.")
+        net_predictor = MalignantNetTrafficPredictor(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth)
+        net_predictor.model_name = name
+        description = description + "(estimators: " + str(n_estimators) + ", learning_rate: " + str(learning_rate) + ", max_depth: " + str(max_depth) + ")"
+        net_predictor.model_description = description
+        net_predictor.train(trainingdataurl)
+        model_loaded = True
+        net_predictor.save_model(name, description, make_filename(name))
+        return {"message": "New model created, trained, and saved."}
+    except Exception as e:
+        return {"error": F"There was an error returning your results: {e}"}
 
 def maketempfile():
     cleantempfiles()
