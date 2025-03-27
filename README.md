@@ -43,3 +43,18 @@ deployment working on their personal workstation.
    a) `docker build -t tag-mntp-demo .`
    b) `docker run -d --name mntp-demo -p 80:80 tag-mntp-demo`
 7) Open a web browser and go to `http://127.0.0.1/`
+
+## Additional Information:
+
+#### The Data:
+The data used in developing this API was pulled from the 
+Malware Detection in Network Traffic Data project on Kaggle:
+https://www.kaggle.com/datasets/agungpambudi/network-malware-detection-connection-analysis/
+
+The specific schemas used for the prediction and training input files for the
+API can be found in the `schemas` folder in this repository.
+
+Instructions for how to gather/compile your own network traffic data are beyond
+the scope of this repository, but to point you in the general direction
+of gathering network traffic data I would encourage you to investigate
+WireShark (https://www.wireshark.org/).
