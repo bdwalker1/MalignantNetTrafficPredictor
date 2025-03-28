@@ -42,7 +42,6 @@ def landing_page(api_url: str):
                 <button class="tab-button" onclick="openTab('tab3')">Predict From JSON</button>
                 <button class="tab-button" onclick="openTab('tab4')">Predict From File</button>
                 <button class="tab-button" onclick="openTab('tab5')">Predict File to File</button>
-                <button class="tab-button" onclick="openTab('tab6')">Tab 6</button>
             </div>
             
             <!-- Right Content Area -->
