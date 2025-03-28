@@ -59,7 +59,7 @@ deployment working on their personal workstation.
 
    *Wait for the terminal to say `Uvicorn running on http://0.0.0.0:80 (Press CTRL+C to quit)`*
 
-8) Open a new web browser tab/window and go to [http://127.0.0.1/](http://127.0.0.1/){:target="_blank"}
+8) Open a new web browser tab/window and go to http://127.0.0.1/
 
 ## Additional Information:
 
