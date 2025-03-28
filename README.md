@@ -43,7 +43,7 @@ deployment working on their personal workstation.
 
     a) `docker build -t tag-mntp-api .`
 
-    b) `docker run -d --name mntp-api -p 8000:8000 tag-mntp-api`
+    b) `docker run -d --name mntp-api -p 8000:80 tag-mntp-api`
 
 5) Navigate to the demo_page folder:
 
@@ -51,15 +51,15 @@ deployment working on their personal workstation.
 
 6) Install the required packages for the web application
 
-   `pip install -r ./requirements.txt`
+    `pip install -r ./requirements.txt`
 
 7) Run the demonstration web application:
 
-    a) `docker build -t tag-mntp-demo .`
+    `python.exe app/demo_page.py`
 
-    b) `docker run -d --name mntp-demo -p 80:80 tag-mntp-demo`
+   *Wait for the terminal to say `Uvicorn running on http://0.0.0.0:80 (Press CTRL+C to quit)`*
 
-7) Open a web browser and go to `http://127.0.0.1/`
+8) Open a new web browser tab/window and go to http://127.0.0.1/
 
 ## Additional Information:
 
