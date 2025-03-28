@@ -1,12 +1,9 @@
 import os
 import requests
-# from pathlib import Path
 import joblib
 import numpy as np
 import datetime as dt
 import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
 # from sklearn.model_selection import train_test_split
@@ -15,7 +12,6 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
-# from sklearn.metrics import PrecisionRecallDisplay as PRDisp
 from src.SimpleTimer import SimpleTimer
 
 
@@ -96,7 +92,7 @@ class MalignantNetTrafficPredictor:
         return
 
     def __get_model_from_repo(self, model_name):
-        repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/models/"
+        repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
         model_extension = ".model"
 
         request_url = repo_model_url_prefix + model_name + model_extension
@@ -262,17 +258,17 @@ class MalignantNetTrafficPredictor:
         self.model_description = loaded_model['desc']
         self.__predictor = loaded_model['model']
         self.__encoders = loaded_model['encoders']
-        return
+        return self
 
     def load_official_model(self, filename):
         filepath = "./models/" + filename + ".model"
-        self.__load__model_file(filepath)
-        return
+        _ = self.__load__model_file(filepath)
+        return self
 
     def load_user_model(self, filename):
         filepath = "/mntp-data/models_user/" + filename + ".model"
-        self.__load__model_file(filepath)
-        return
+        _ = self.__load__model_file(filepath)
+        return self
 
     def save_model(self, name, desc, filename):
         if os.path.basename(filename) != filename:
@@ -314,29 +310,29 @@ class MalignantNetTrafficPredictor:
         return
 
     def retrieve_latest_model(self):
-        self.retrieve_named_model("MalignantNetTrafficPredictor-latest")
-        return
+        model = self.retrieve_named_model("MalignantNetTrafficPredictor-latest")
+        return model
 
     def retrieve_named_model(self, name: str):
         self.__get_model_from_repo(name)
-        self.load_official_model(name)
-        return
+        model = self.load_official_model(name)
+        return model
 
     def list_available_models(self):
         self.__verify_expected_storage_dirs()
         print(F"Listing available models...")
         model_list = {}
-        tmp_model = MalignantNetTrafficPredictor()
+        model_loader = MalignantNetTrafficPredictor()
         for entry in os.scandir("./models"):
             if entry.name.endswith(".model"):
                 filename = str(os.path.basename(entry.name)).removesuffix(".model")
-                tmp_model.load_official_model(filename)
+                tmp_model = model_loader.load_official_model(filename)
                 model_list[tmp_model.model_name] = { "type": "official", "name": tmp_model.model_name,
                                                      "desc": tmp_model.model_description, "filename": filename}
         for entry in os.scandir("/mntp-data/models_user"):
             if str(entry.name).endswith(".model"):
                 filename = str(os.path.basename(entry.name)).removesuffix(".model")
-                tmp_model.load_user_model(filename)
+                tmp_model = model_loader.load_user_model(filename)
                 model_list[tmp_model.model_name] = { "type": "user", "name": tmp_model.model_name,
                                                      "desc": tmp_model.model_description, "filename": filename}
         return model_list

@@ -93,7 +93,7 @@ button {
   max-width: 95%;
   background-color: #d4fcd4;;
   display: flex;
-  min-height: 100vh;
+  min-height: 75vh;
 }
 
 img.logo {
@@ -150,4 +150,7 @@ img.logo {
 iframe.results {
     background-color: #FAFAFA;
     width: 95%;
+}
+div.secret {
+    display: none;
 }
