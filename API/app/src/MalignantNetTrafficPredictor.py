@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from src.SimpleTimer import SimpleTimer
 
+___models_github_url = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
 
 class MalignantNetTrafficPredictor:
     INPUT_FILE_CHUNKSIZE = 5000000
@@ -92,7 +93,7 @@ class MalignantNetTrafficPredictor:
         return
 
     def __get_model_from_repo(self, model_name):
-        repo_model_url_prefix = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
+        repo_model_url_prefix = ___models_github_url
         model_extension = ".model"
 
         request_url = repo_model_url_prefix + model_name + model_extension
