@@ -27,7 +27,7 @@ net_predictor = MalignantNetTrafficPredictor()
 async def root(response: Response, session_id: UUID = Cookie(None)):
     session_id, session_data = await get_session_data(session_id)
     reply = HTMLResponse(F"Welcome to Malignant Net Traffic Predictor")
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True)
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/listmodels/", name="List Available Models",
@@ -36,7 +36,7 @@ async def list_models(response: Response, session_id: UUID = Cookie(None)):
     session_id, session_data = await get_session_data(session_id)
     dictModels = net_predictor.list_available_models()
     reply = JSONResponse(json.dumps(dictModels, indent=2))
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/loadedmodel/", name="Show the Currently Loaded Model",
@@ -47,7 +47,7 @@ async def loaded_model(response: Response, session_id: UUID = Cookie(None)):
         reply = JSONResponse(json.dumps({"name": session_data.model.model_name, "desc": session_data.model.model_description}, indent=2))
     else:
         reply = JSONResponse(json.dumps({"name": "(no model loaded)", "desc": "(no model loaded)"}, indent=2))
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/getlatestmodel/", name="Get Latest Model", description="Get the latest model from the official GitHub repository.")
@@ -65,7 +65,7 @@ async def getlatestmodel(response: Response, session_id: UUID = Cookie(None)):
         reply = JSONResponse({"error": F"Failed to retrieve latest model. Ensure api container has access to "
                          F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
                          F". Details: {str(e)}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/getmodelversion/", name="Get Specific Model Version", description="Get a specific model version from the official GitHub repository.")
@@ -83,7 +83,7 @@ async def get_modelversion(name: str, response: Response, session_id: UUID = Coo
         reply = JSONResponse({"error": F"Failed to retrieve model. Ensure model named '{name}' exists at "
                          F"https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
                          F"and that your api container has access to that site. Details: {str(e)}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/savemodel/", name="Save Current Model", description="Save the current model to the user models folder.")
@@ -97,7 +97,7 @@ async def save_model(name: str, desc: str, filename: str, response: Response, se
             reply = JSONResponse({"message": F"Saved model - Name: {name}; Description: {desc}"})
         except Exception as e:
             reply = JSONResponse({"error": F"Failed to save model. {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/deletemodel/", name="Delete a User-saved Model", description="Delete a user-saved model based on filename.")
@@ -108,7 +108,7 @@ async def delete_model(filename: str, response: Response, session_id: UUID = Coo
         reply = JSONResponse({"message": F"Deleted user-saved model - Filename: {filename}"})
     except Exception as e:
         reply = JSONResponse({"error": F"Failed to delete model file. {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/loadofficialmodel/", name="Load Official Model", description="Load a model that has been downloaded from official repository.")
@@ -123,7 +123,7 @@ async def loadofficialmodel(filename: str, response: Response, session_id: UUID 
         reply = JSONResponse({"message": F"Loaded model - Name: {model.model_name}; Description: {model.model_description}"})
     except Exception as e:
         reply = JSONResponse({"error": F"Failed to load model. {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/loadusermodel/", name="Load a User-Saved Model", description="Load a specific user-saved model.")
@@ -139,7 +139,7 @@ async def loadusermodel(filename: str, response: Response, session_id: UUID = Co
     except Exception as e:
         print(F"Failed to load model. {e}")
         reply = JSONResponse({"error": F"Failed to load model. {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/predictfromjson/",
@@ -170,7 +170,7 @@ async def predictfromjson(json_str: str, response: Response, session_id: UUID = 
                 reply = JSONResponse({"Error": "Columns do not match expected input schema."})
         except Exception as e:
             reply = JSONResponse({"error": F"Exception occurred: {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/predictfromfile/",
@@ -190,7 +190,7 @@ async def predictfromfile(fileurl: str, response: Response, session_id: UUID = C
             reply = response
         except Exception as e:
             reply = JSONResponse({"error": F"There was an error returning your results: {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/predictfile2file/",
@@ -208,7 +208,7 @@ async def predictfile2file(inputurl: str, outputurl: str, response: Response, se
             reply = JSONResponse({"message": F"Predictions written to {outputurl}."})
         except Exception as e:
             reply = JSONResponse({"error": F"There was an error returning your results: {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @api.post("/createandtrainmodel/",
@@ -236,7 +236,7 @@ async def createandtrainmodel(name: str, description: str, n_estimators: int,
         reply = JSONResponse({"message": "New model created, trained, and saved."})
     except Exception as e:
         reply = JSONResponse({"error": F"There was an error returning your results: {e}"})
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True, samesite="Lax")
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 def maketempfile():

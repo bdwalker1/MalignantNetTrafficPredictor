@@ -22,14 +22,14 @@ appvars.api_url = __api_url
 async def root(response: Response, session_id: UUID = Cookie(None)):
     session_id, session_data = await appvars.get_session_data(session_id)
     reply = await web.landing_page(session_id, session_data)
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True)
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @demo.get("/blank", name="API Demo Page", response_class=HTMLResponse)
 async def root(response: Response, session_id: UUID = Cookie(None)):
     session_id, session_data = await appvars.get_session_data(session_id)
     reply = HTMLResponse(" ")
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True)
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @demo.get("/favicon.ico")
@@ -64,7 +64,7 @@ async def apicall(endpoint: str, qstring: str, response: Response, session_id: U
         reply = StreamingResponse(stream_results(), media_type=mediatype,headers=headers)
     else:
         reply = PlainTextResponse(str(apiresponse.json()))
-    reply.set_cookie("session_id", session_id, max_age=900, secure=True, httponly=True)
+    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 if __name__ == "__main__":

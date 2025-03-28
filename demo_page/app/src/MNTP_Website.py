@@ -66,6 +66,7 @@ async def landing_page(session_id: str, session_data: appvars.SessionData):
         </div>
         <hr>
         Go to the <a href="{appvars.api_url}/docs/">Fast API /docs/ page</a> to interact directly with the API.<br>
+        <div class="secret" id="session_id">{str(session_id)}</div>
         <div class="secret" id="api_session_id">{str(session_data.api_session_id)}</div>
         
     """
