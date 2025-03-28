@@ -19,7 +19,6 @@ function do_web_request(url, sectionId) {
         .catch(error => {
             console.error('Error:', error);
         });
-    window.location.reload();
 }
 
 function loadmodel(base_url, type, name) {
@@ -28,6 +27,7 @@ function loadmodel(base_url, type, name) {
     load_url = base_url + "/" + method + "/?filename=" + encodeURI(name);
 
     do_web_request(load_url, "model_list");
+    setTimeout(function() {window.location.reload();}, 500);
 };
 
 function deletemodel(base_url, filename) {
@@ -36,6 +36,7 @@ function deletemodel(base_url, filename) {
         load_url = base_url + "/deletemodel/?filename=" + filename;
 
         do_web_request(load_url, "model_list");
+        setTimeout(function() {window.location.reload();}, 500);
     }
 }
 
@@ -49,36 +50,8 @@ function model_creator(base_url, form) {
     load_url += "&trainingdataurl=" + encodeURI(form.trainingdataurl.value);
 
     do_web_request(load_url, "model_creator");
+    setTimeout(function() {window.location.reload();}, 500);
 }
-
-// function predict_from_json(base_url, form) {
-//
-//     load_url = base_url + "/predictfromjson/?json_str=" + encodeURI(form.json_string.value.replace(/\r?\n|\t/g, ""));
-//     document.getElementById('json_predictions').innerHTML = load_url;
-//
-//     const response = fetch(load_url, {
-//         method: 'POST',
-//         headers: {
-//             'accept': 'application/json'
-//         },
-//         body: JSON.stringify("")
-//     })
-//     .then(response => {
-//         if (!response.ok) {
-//             throw new Error('Network response was not ok');
-//         }
-//         return response.json();
-//     })
-//     .then(responseData => {
-//         console.log('Success:', responseData);
-//     })
-//     .catch(error => {
-//         document.getElementById("json_predictions").innerHTML = "Error: " + error + ;
-//         console.error('Error:', error);
-//     });
-//
-//     document.getElementById("json_predictions").innerHTML = response.json();
-// }
 
 function predict_from_json(jsonform) {
 
