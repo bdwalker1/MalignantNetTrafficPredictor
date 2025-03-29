@@ -12,11 +12,11 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
+import src.appvars as appvars
 from src.SimpleTimer import SimpleTimer
 
-___models_github_url = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
-
 class MalignantNetTrafficPredictor:
+    MODELS_GITHUB_URL = "https://github.com/bdwalker1/MalignantNetTrafficPredictor/raw/refs/heads/main/API/models/"
     INPUT_FILE_CHUNKSIZE = 5000000
     TRAINING_FILE_COLS = {
         "id.orig_p": "int32",
@@ -93,7 +93,7 @@ class MalignantNetTrafficPredictor:
         return
 
     def __get_model_from_repo(self, model_name):
-        repo_model_url_prefix = ___models_github_url
+        repo_model_url_prefix = self.MODELS_GITHUB_URL
         model_extension = ".model"
 
         request_url = repo_model_url_prefix + model_name + model_extension

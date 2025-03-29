@@ -1,11 +1,15 @@
 import os
-from fastapi import FastAPI, Depends, Request, Response, HTTPException, Cookie
+from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse, StreamingResponse, RedirectResponse
 import uvicorn
 from uuid import UUID
+
+from starlette.responses import RedirectResponse
+
 import src.MNTP_Website as web
 import src.appvars as appvars
+from src.appvars import is_uuid
 import requests
 
 demo = FastAPI()
@@ -18,18 +22,18 @@ if not(__api_url):
 appvars.init()
 appvars.api_url = __api_url
 
-@demo.get("/", name="API Demo Page", response_class=HTMLResponse)
-async def root(response: Response, session_id: UUID = Cookie(None)):
-    session_id, session_data = await appvars.get_session_data(session_id)
+@demo.get("/", name="API Demo Page")
+async def root(response: Response, session_id: UUID = None):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
+    if is_new_session:
+        return RedirectResponse(url=F"/?session_id={str(session_id)}")
     reply = await web.landing_page(session_id, session_data)
-    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
+    reply.headers['session_id'] = session_data.session_id
     return reply
 
 @demo.get("/blank", name="API Demo Page", response_class=HTMLResponse)
-async def root(response: Response, session_id: UUID = Cookie(None)):
-    session_id, session_data = await appvars.get_session_data(session_id)
+async def root(response: Response):
     reply = HTMLResponse(" ")
-    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
     return reply
 
 @demo.get("/favicon.ico")
@@ -37,19 +41,19 @@ async def favicon(request: Request):
     return FileResponse("./webpage/favicon.ico")
 
 @demo.post("/apicall")
-async def apicall(endpoint: str, qstring: str, response: Response, session_id: UUID = Cookie(None)):
-    session_id, session_data = await appvars.get_session_data(session_id)
+async def apicall(endpoint: str, qstring: str, response: Response, session_id: UUID = None):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
+    if is_new_session:
+        return RedirectResponse(url=F"/?session_id={str(session_id)}")
     qstring = qstring.replace("%26", "&")
-    cookies = {}
-    if session_data.api_cookies is not None:
-        cookies = session_data.api_cookies
     headers={"accept": "application/json"}
-    if session_data.api_session_id is not None:
-        headers["Cookie"] = F"session_id={session_data.api_session_id}"
-    apiresponse = requests.post(appvars.api_url + "/" + endpoint + "/?" + qstring, headers=headers, cookies=cookies, data={})
-    session_data.api_cookies = apiresponse.cookies
-    session_data.api_session_id = apiresponse.cookies.get("session_id")
-    _ = await appvars.backend.update(session_id, session_data)
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}&{qstring}"
+    apiresponse = requests.post(appvars.api_url + "/" + endpoint + "/?" + qstring, headers=headers, data={})
+    if apiresponse.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = apiresponse.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     output = "???????"
     if endpoint == "predictfromfile":
         async def stream_results():
@@ -63,8 +67,7 @@ async def apicall(endpoint: str, qstring: str, response: Response, session_id: U
         }
         reply = StreamingResponse(stream_results(), media_type=mediatype,headers=headers)
     else:
-        reply = PlainTextResponse(str(apiresponse.json()))
-    reply.set_cookie("session_id", session_id, max_age=900, secure=False, samesite='None', httponly=True)
+        reply = PlainTextResponse(str(apiresponse.json()), headers={"session_id": session_data.session_id})
     return reply
 
 if __name__ == "__main__":

@@ -1,29 +1,48 @@
 from pydantic import BaseModel, ConfigDict
-from requests.cookies import RequestsCookieJar
-from fastapi_sessions.backends.implementations import InMemoryBackend
 from uuid import UUID, uuid4
 
 class SessionData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    api_session_id: str = None,
-    api_cookies: RequestsCookieJar = None
-
-backend = InMemoryBackend[UUID, SessionData]()
+    session_id: str = None
+    api_session_id: str = None
 
 def init():
-    global api_url
+    global api_url, sessions_db
     api_url = ""
+    sessions_db = {}
 
-async def get_session_data(session_id: UUID):
+def get_session_data(session_id):
+    global sessions_db
+    is_new_session = False
     print(F"session_id: {session_id}")
-    if session_id == None:
+    if (session_id == None) or (not is_uuid(session_id)):
+        is_new_session = True
         session_id = uuid4()
         session_data = SessionData()
-        await backend.create(session_id, session_data)
+        session_data.session_id = str(session_id)
+        sessions_db[session_id] = session_data
     else:
-        session_data = await backend.read(session_id)
+        session_data = sessions_db.get(session_id)
         if session_data == None:
+            is_new_session = True
             session_data = SessionData()
-            _ = await backend.create(session_id, session_data)
-    return session_id, session_data
+            session_data.session_id = str(session_id)
+            sessions_db[session_id] = session_data
+    return session_id, session_data, is_new_session
 
+def update_session_data(session_id: UUID, session_data: SessionData):
+    global sessions_db
+    session_data.session_id = str(session_id)
+    sessions_db[session_id] = session_data
+    return
+
+def is_uuid(uuid_to_test, version=4):
+    if uuid_to_test == None:
+        return False
+    uuid_str = str(uuid_to_test)
+    try:
+        # check for validity of Uuid
+        uuid_obj = UUID(uuid_str, version=version)
+    except ValueError:
+        return False
+    return True

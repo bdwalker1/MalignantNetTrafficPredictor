@@ -2,6 +2,8 @@ import requests
 import json
 from fastapi.responses import HTMLResponse
 import src.appvars as appvars
+from src.appvars import is_uuid
+from uuid import UUID
 
 def html_page( title: str, content: str ):
     html_output = F"""
@@ -22,7 +24,7 @@ def html_page( title: str, content: str ):
     """
     return HTMLResponse(content=html_output, status_code=200)
 
-async def landing_page(session_id: str, session_data: appvars.SessionData):
+async def landing_page(session_id: UUID, session_data: appvars.SessionData):
     title = "Malignant Network Traffic Predictor"
     page_content = f"""
         <img src="/static/mntp_icon.png" alt="{title} Icon" class="logo" />
@@ -73,17 +75,19 @@ async def landing_page(session_id: str, session_data: appvars.SessionData):
     return html_page(title, page_content)
 
 async def show_loaded_model(session_id: str, session_data: appvars.SessionData):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_output = "<div class=\"loadedmodel\"><h2>Loaded Model</h2>"
     headers = {
         "accept": "application/json",
     }
-    if session_data.api_cookies is not None:
-        if session_data.api_cookies.get('session_id') is not None:
-            headers["Cookie"] = F"session_id={session_data.api_cookies.get('session_id')}"
-    model = requests.post(appvars.api_url + "/loadedmodel/", headers=headers, cookies=session_data.api_cookies, data={})
-    session_data.api_cookies = model.cookies
-    session_data.api_session_id = model.cookies.get("session_id")
-    _= await appvars.backend.update(session_id, session_data)
+    qstring = ""
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}"
+    model = requests.post(appvars.api_url + F"/loadedmodel/?{qstring}", headers=headers, data={})
+    if model.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = model.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     model_dict = json.loads(model.json())
     str_output += "<table>"
     str_output += table_row(["<b>Name</b>", model_dict['name']])
@@ -92,20 +96,21 @@ async def show_loaded_model(session_id: str, session_data: appvars.SessionData):
     return str_output
 
 async def make_model_list(session_id: str, session_data: appvars.SessionData):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_models = ("<div id=\"model_list\"><h2>Models available in this API container</h2>"
                     "<table>")
     str_models += table_row(["Name", "Type", "Description", "Actions"], header=True)
-    cookies = {}
     headers = {
         "accept": "application/json",
     }
-    if session_data.api_cookies is not None:
-        if session_data.api_cookies.get('session_id') is not None:
-            headers["Cookie"] = F"session_id={session_data.api_cookies.get('session_id')}"
-    models = requests.post(appvars.api_url + "/listmodels/", headers=headers, cookies=session_data.api_cookies, data={})
-    session_data.api_cookies = models.cookies
-    session_data.api_session_id = models.cookies.get("session_id")
-    _= await appvars.backend.update(session_id, session_data)
+    qstring = ""
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}"
+    models = requests.post(appvars.api_url + F"/listmodels/?{qstring}", headers=headers, data={})
+    if models.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = models.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     models_dict = json.loads(models.json())
     model_names = sorted(list(models_dict.keys()))
     for model_name in model_names:

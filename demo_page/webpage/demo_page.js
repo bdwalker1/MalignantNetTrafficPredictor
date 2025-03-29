@@ -24,7 +24,9 @@ function do_web_request(url, sectionId) {
 function loadmodel(type, name) {
     method = ((type == 'official') ? 'loadofficialmodel' : 'loadusermodel');
 
-    load_url = "/apicall/?endpoint=" + method + "&qstring=" + encodeURI("filename=" + encodeURI(name));
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=" + method + "&qstring=" + encodeURI("filename=" + encodeURI(name));
 
     do_web_request(load_url, "model_list");
     setTimeout(function(){window.location.reload();}, 500);
@@ -33,7 +35,9 @@ function loadmodel(type, name) {
 function deletemodel(filename) {
     if (confirm("Proceed with model deletion?") == true)
     {
-        load_url = "/apicall/?endpoint=deletemodel&qstring=" + encodeURI("filename=" + encodeURI(filename));
+        session_id = document.getElementById("session_id").innerHTML;
+        load_url = "/apicall/?session_id=" + session_id;
+        load_url += "&endpoint=deletemodel&qstring=" + encodeURI("filename=" + encodeURI(filename));
 
         do_web_request(load_url, "model_list");
         setTimeout(function(){window.location.reload();}, 500);
@@ -48,7 +52,10 @@ function model_creator(form) {
     query += "%26learning_rate=" + encodeURI(form.learning_rate.value);
     query += "%26max_depth=" + encodeURI(form.max_depth.value);
     query += "%26trainingdataurl=" + encodeURI(form.trainingdataurl.value);
-    load_url = "/apicall/?endpoint=createandtrainmodel&qstring=" + encodeURI(query);
+
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=createandtrainmodel&qstring=" + encodeURI(query);
 
     do_web_request(load_url, "model_creator");
     setTimeout(function(){window.location.reload();}, 500);
@@ -56,7 +63,9 @@ function model_creator(form) {
 
 function predict_from_json(jsonform) {
 
-    load_url = "/apicall/?endpoint=predictfromjson&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfromjson&qstring=" +
         encodeURI("json_str=" + encodeURI(jsonform.json_string.value.replace(/\r?\n|\t/g, "")));
     const form = document.createElement("form");
     form.method = "POST";
@@ -72,7 +81,9 @@ function predict_from_json(jsonform) {
 
 function predict_from_file(pffform) {
 
-    load_url = "/apicall/?endpoint=predictfromfile&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfromfile&qstring=" +
         encodeURI("fileurl=" + encodeURI(pffform.inputdataurl.value));
     const form = document.createElement("form");
     form.method = "POST";
@@ -88,7 +99,9 @@ function predict_from_file(pffform) {
 
 function predict_file2file(f2fform) {
 
-    load_url = "/apicall/?endpoint=predictfile2file&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfile2file&qstring=" +
         encodeURI("inputurl=" + encodeURI(f2fform.inputdataurl.value) + "%26outputurl=" + encodeURI(f2fform.outputurl.value));
     const form = document.createElement("form");
     form.method = "POST";
