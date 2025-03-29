@@ -21,41 +21,51 @@ function do_web_request(url, sectionId) {
         });
 }
 
-function loadmodel(base_url, type, name) {
+function loadmodel(type, name) {
     method = ((type == 'official') ? 'loadofficialmodel' : 'loadusermodel');
 
-    load_url = base_url + "/" + method + "/?filename=" + encodeURI(name);
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=" + method + "&qstring=" + encodeURI("filename=" + encodeURI(name));
 
     do_web_request(load_url, "model_list");
-    setTimeout(function() {window.location.reload();}, 500);
+    setTimeout(function(){window.location.reload();}, 500);
 };
 
-function deletemodel(base_url, filename) {
+function deletemodel(filename) {
     if (confirm("Proceed with model deletion?") == true)
     {
-        load_url = base_url + "/deletemodel/?filename=" + filename;
+        session_id = document.getElementById("session_id").innerHTML;
+        load_url = "/apicall/?session_id=" + session_id;
+        load_url += "&endpoint=deletemodel&qstring=" + encodeURI("filename=" + encodeURI(filename));
 
         do_web_request(load_url, "model_list");
-        setTimeout(function() {window.location.reload();}, 500);
+        setTimeout(function(){window.location.reload();}, 500);
     }
 }
 
-function model_creator(base_url, form) {
+function model_creator(form) {
 
-    load_url = base_url + "/createandtrainmodel/?name=" + encodeURI(form.name.value);
-    load_url += "&description=" + encodeURI(form.description.value);
-    load_url += "&n_estimators=" + encodeURI(form.n_estimators.value);
-    load_url += "&learning_rate=" + encodeURI(form.learning_rate.value);
-    load_url += "&max_depth=" + encodeURI(form.max_depth.value);
-    load_url += "&trainingdataurl=" + encodeURI(form.trainingdataurl.value);
+    query = "name=" + encodeURI(form.name.value);
+    query += "%26description=" + encodeURI(form.description.value);
+    query += "%26n_estimators=" + encodeURI(form.n_estimators.value);
+    query += "%26learning_rate=" + encodeURI(form.learning_rate.value);
+    query += "%26max_depth=" + encodeURI(form.max_depth.value);
+    query += "%26trainingdataurl=" + encodeURI(form.trainingdataurl.value);
+
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=createandtrainmodel&qstring=" + encodeURI(query);
 
     do_web_request(load_url, "model_creator");
-    setTimeout(function() {window.location.reload();}, 500);
+    setTimeout(function(){window.location.reload();}, 500);
 }
 
 function predict_from_json(jsonform) {
 
-    load_url = "/apicall/?endpoint=predictfromjson&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfromjson&qstring=" +
         encodeURI("json_str=" + encodeURI(jsonform.json_string.value.replace(/\r?\n|\t/g, "")));
     const form = document.createElement("form");
     form.method = "POST";
@@ -71,7 +81,9 @@ function predict_from_json(jsonform) {
 
 function predict_from_file(pffform) {
 
-    load_url = "/apicall/?endpoint=predictfromfile&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfromfile&qstring=" +
         encodeURI("fileurl=" + encodeURI(pffform.inputdataurl.value));
     const form = document.createElement("form");
     form.method = "POST";
@@ -87,7 +99,9 @@ function predict_from_file(pffform) {
 
 function predict_file2file(f2fform) {
 
-    load_url = "/apicall/?endpoint=predictfile2file&qstring=" +
+    session_id = document.getElementById("session_id").innerHTML;
+    load_url = "/apicall/?session_id=" + session_id;
+    load_url += "&endpoint=predictfile2file&qstring=" +
         encodeURI("inputurl=" + encodeURI(f2fform.inputdataurl.value) + "%26outputurl=" + encodeURI(f2fform.outputurl.value));
     const form = document.createElement("form");
     form.method = "POST";

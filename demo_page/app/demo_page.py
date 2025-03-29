@@ -1,10 +1,15 @@
 import os
-import json
-from fastapi import FastAPI, Request
-import uvicorn
-from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse, StreamingResponse
+from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse, StreamingResponse, RedirectResponse
+import uvicorn
+from uuid import UUID
+
+from starlette.responses import RedirectResponse
+
 import src.MNTP_Website as web
+import src.appvars as appvars
+from src.appvars import is_uuid
 import requests
 
 demo = FastAPI()
@@ -14,22 +19,41 @@ __api_url = os.environ.get("MNTP_API_URL")
 if not(__api_url):
     __api_url = "http://127.0.0.1:8000"
 
-@demo.get("/", name="API Demo Page", response_class=HTMLResponse)
-async def root(request: Request):
-    return web.landing_page(__api_url)
+appvars.init()
+appvars.api_url = __api_url
+
+@demo.get("/", name="API Demo Page")
+async def root(response: Response, session_id: UUID = None):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
+    if is_new_session:
+        return RedirectResponse(url=F"/?session_id={str(session_id)}")
+    reply = await web.landing_page(session_id, session_data)
+    reply.headers['session_id'] = session_data.session_id
+    return reply
 
 @demo.get("/blank", name="API Demo Page", response_class=HTMLResponse)
-async def root(request: Request):
-    return HTMLResponse(" ")
+async def root(response: Response):
+    reply = HTMLResponse(" ")
+    return reply
 
 @demo.get("/favicon.ico")
 async def favicon(request: Request):
     return FileResponse("./webpage/favicon.ico")
 
 @demo.post("/apicall")
-async def apicall(endpoint: str, qstring: str):
+async def apicall(endpoint: str, qstring: str, response: Response, session_id: UUID = None):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
+    if is_new_session:
+        return RedirectResponse(url=F"/?session_id={str(session_id)}")
     qstring = qstring.replace("%26", "&")
-    apiresponse = requests.post(__api_url + "/" + endpoint + "/?" + qstring, headers={"accept": "application/json"}, data={})
+    headers={"accept": "application/json"}
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}&{qstring}"
+    apiresponse = requests.post(appvars.api_url + "/" + endpoint + "/?" + qstring, headers=headers, data={})
+    if apiresponse.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = apiresponse.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     output = "???????"
     if endpoint == "predictfromfile":
         async def stream_results():
@@ -41,14 +65,11 @@ async def apicall(endpoint: str, qstring: str):
             "Content-Type": mediatype,
             "Content-Disposition": "attachment; filename=predictions.csv"
         }
-        return StreamingResponse(stream_results(), media_type=mediatype,headers=headers)
+        reply = StreamingResponse(stream_results(), media_type=mediatype,headers=headers)
     else:
-        output = str(apiresponse.json())
-    # if endpoint == "predictfromjson":
-    #     output = str(apiresponse.json())
-    # if endpoint == "predictfile2file":
-    #     output = apiresponse.text
-    return PlainTextResponse(output)
+        reply = PlainTextResponse(str(apiresponse.json()), headers={"session_id": session_data.session_id})
+    return reply
 
 if __name__ == "__main__":
+
     uvicorn.run(demo, host="0.0.0.0", port=80)

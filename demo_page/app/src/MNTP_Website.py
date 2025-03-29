@@ -1,9 +1,9 @@
-import os
 import requests
 import json
 from fastapi.responses import HTMLResponse
-
-__api_url = ""
+import src.appvars as appvars
+from src.appvars import is_uuid
+from uuid import UUID
 
 def html_page( title: str, content: str ):
     html_output = F"""
@@ -24,16 +24,14 @@ def html_page( title: str, content: str ):
     """
     return HTMLResponse(content=html_output, status_code=200)
 
-def landing_page(api_url: str):
-    global __api_url
-    __api_url = api_url
+async def landing_page(session_id: UUID, session_data: appvars.SessionData):
     title = "Malignant Network Traffic Predictor"
     page_content = f"""
         <img src="/static/mntp_icon.png" alt="{title} Icon" class="logo" />
         <h3>&nbsp;<br></h3>
         <h1>{title}</h1>
         <h3>This web page serves as a demonstration of how to use the Malignant Net Traffic Predictor API.</h3><br>
-        {show_loaded_model()}
+        {await show_loaded_model(session_id, session_data)}
         <div class="container">
             <!-- Left Column with Tabs -->
             <div class="tab-column">
@@ -48,7 +46,7 @@ def landing_page(api_url: str):
             <div class="content-section">
                 <!-- Tab 1 Content -->
                 <div id="tab1" class="tab-content active">
-                    {make_model_list()}
+                    {await make_model_list(session_id, session_data)}
                 </div>
                 <!-- Tab 2 Content -->
                 <div id="tab2" class="tab-content">
@@ -69,23 +67,27 @@ def landing_page(api_url: str):
             </div>
         </div>
         <hr>
-        Go to the <a href="{__api_url}/docs/">Fast API /docs/ page</a> to interact directly with the API.<br>
+        Go to the <a href="{appvars.api_url}/docs/">Fast API /docs/ page</a> to interact directly with the API.<br>
+        <div class="secret" id="session_id">{str(session_id)}</div>
+        <div class="secret" id="api_session_id">{str(session_data.api_session_id)}</div>
         
     """
     return html_page(title, page_content)
 
-# def style_shaeet():
-#     strCSS = "<style>"
-#     filecss = open("./webpage/demo_page.css", "r+t")
-#     strCSS += filecss.read()
-#     filecss.close()
-#     strCSS += "</style>"
-#     return strCSS
-
-def show_loaded_model():
-    global __api_url
+async def show_loaded_model(session_id: str, session_data: appvars.SessionData):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_output = "<div class=\"loadedmodel\"><h2>Loaded Model</h2>"
-    model = requests.post(__api_url + "/loadedmodel/", headers={"accept": "application/json"}, data={})
+    headers = {
+        "accept": "application/json",
+    }
+    qstring = ""
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}"
+    model = requests.post(appvars.api_url + F"/loadedmodel/?{qstring}", headers=headers, data={})
+    if model.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = model.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     model_dict = json.loads(model.json())
     str_output += "<table>"
     str_output += table_row(["<b>Name</b>", model_dict['name']])
@@ -93,34 +95,42 @@ def show_loaded_model():
     str_output += "</table></div>"
     return str_output
 
-def make_model_list():
-    global __api_url
+async def make_model_list(session_id: str, session_data: appvars.SessionData):
+    session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_models = ("<div id=\"model_list\"><h2>Models available in this API container</h2>"
                     "<table>")
     str_models += table_row(["Name", "Type", "Description", "Actions"], header=True)
-    models = requests.post(__api_url + "/listmodels/", headers={"accept": "application/json"}, data={})
+    headers = {
+        "accept": "application/json",
+    }
+    qstring = ""
+    if is_uuid(session_data.api_session_id):
+        headers["session_id"] = F"{session_data.api_session_id}"
+        qstring = F"session_id={session_data.api_session_id}"
+    models = requests.post(appvars.api_url + F"/listmodels/?{qstring}", headers=headers, data={})
+    if models.headers.get('session_id') != session_data.api_session_id:
+        session_data.api_session_id = models.headers.get('session_id')
+        appvars.update_session_data(session_id, session_data)
     models_dict = json.loads(models.json())
     model_names = sorted(list(models_dict.keys()))
     for model_name in model_names:
         lst_model = [model_name]
         lst_model.append(models_dict[model_name]["type"])
         lst_model.append(models_dict[model_name]["desc"])
-        actions = ("<button type=\"button\" onclick='loadmodel(\"" + __api_url + "\", \""
-                   + models_dict[model_name]["type"] +"\", \""
-                   + models_dict[model_name]["filename"] + "\");'>Load</button>\n")
+        actions = (F"<button type=\"button\" onclick='loadmodel(\"{models_dict[model_name]["type"]}\", "
+                   F"\"{models_dict[model_name]["filename"]}\");'>Load</button>\n")
         if models_dict[model_name]["type"] == "user":
-            actions += ("<br><button type=\"button\" onclick='deletemodel(\"" + __api_url + "\", \""
-                       + models_dict[model_name]["filename"] + "\");'>Delete</button>\n")
+            actions += (F"<br><button type=\"button\" onclick='deletemodel(\""
+                        F"{models_dict[model_name]["filename"]}\");'>Delete</button>\n")
         lst_model.append(actions)
         str_models += table_row(lst_model)
     str_models += "</table></div>"
     return str_models
 
 def model_creator():
-    global __api_url
     str_creator = ("<div id=\"model_creator\"><span style=\"font-size: 1.25rem; font-weight: bold;\">"
                     "Create a New Model:</span><br>")
-    str_creator += "<form id='form_create_model' action='javascript:;' onsubmit='model_creator(\"" + __api_url + "\",this);' >"
+    str_creator += "<form id='form_create_model' action='javascript:;' onsubmit='model_creator(this);' >"
     str_creator += "<label for='name'>Name: </label><input type='text' name='name' value='' size=36 maxlength=30 /><br>"
     str_creator += "<label for='description'>Description: </label><input type='text' name='description' value='' size=64 maxlength=60 /><br>"
     str_creator += "<label for='n_estimators'>Estimators: </label><input type='number' name='n_estimators' value='1' size=3 min=1 max=20 /><br>"
