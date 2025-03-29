@@ -3,10 +3,8 @@ import re
 import tempfile as __tempfile
 from io import StringIO
 import json
-# from pydantic import BaseModel, ConfigDict
-from fastapi import FastAPI, Depends, Response, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-# from fastapi_sessions.backends.implementations import InMemoryBackend
 from uuid import UUID
 import uvicorn
 import pandas as pd
@@ -31,8 +29,8 @@ async def root(session_id: UUID = None):
 async def list_models(session_id: UUID = None):
     session_id, session_data = appvars.get_session_data(session_id)
     headers = {"session_id": session_data.session_id}
-    dictModels = net_predictor.list_available_models()
-    reply = JSONResponse(json.dumps(dictModels, indent=2), headers=headers)
+    dict_models = net_predictor.list_available_models()
+    reply = JSONResponse(json.dumps(dict_models, indent=2), headers=headers)
     return reply
 
 @api.post("/loadedmodel/", name="Show the Currently Loaded Model",
@@ -91,7 +89,7 @@ async def get_modelversion(name: str, session_id: UUID = None):
 async def save_model(name: str, desc: str, filename: str, session_id: UUID = None):
     session_id, session_data = appvars.get_session_data(session_id)
     headers = {"session_id": session_data.session_id}
-    if session_data.model_loaded == False:
+    if not session_data.model_loaded:
         reply = JSONResponse({"error": "You need have an active model before you can save."}, headers=headers)
     else:
         try:
@@ -152,7 +150,7 @@ async def loadusermodel(filename: str, session_id: UUID = None):
 async def predictfromjson(json_str: str, session_id: UUID = None):
     session_id, session_data = appvars.get_session_data(session_id)
     headers = {"session_id": session_data.session_id}
-    if session_data.model_loaded == False:
+    if not session_data.model_loaded:
         reply = JSONResponse({"error": "You need have an active model before you can save."}, headers=headers)
     else:
         empty_df = pd.DataFrame([], columns=net_predictor.INPUT_FILE_COLS)
@@ -182,7 +180,7 @@ async def predictfromjson(json_str: str, session_id: UUID = None):
 async def predictfromfile(fileurl: str, session_id: UUID = None):
     session_id, session_data = appvars.get_session_data(session_id)
     headers = {"session_id": session_data.session_id}
-    if session_data.model_loaded == False:
+    if not session_data.model_loaded:
         reply = JSONResponse({"error": "You need have an active model before you can save."}, headers=headers)
     else:
         try:
@@ -203,7 +201,7 @@ async def predictfromfile(fileurl: str, session_id: UUID = None):
 async def predictfile2file(inputurl: str, outputurl: str, session_id: UUID = None):
     session_id, session_data = appvars.get_session_data(session_id)
     headers = {"session_id": session_data.session_id}
-    if session_data.model_loaded == False:
+    if not session_data.model_loaded:
         reply = JSONResponse({"error": "You need have an active model before you can save."}, headers=headers)
     else:
         try:

@@ -31,7 +31,7 @@ async def landing_page(session_id: UUID, session_data: appvars.SessionData):
         <h3>&nbsp;<br></h3>
         <h1>{title}</h1>
         <h3>This web page serves as a demonstration of how to use the Malignant Net Traffic Predictor API.</h3><br>
-        {await show_loaded_model(session_id, session_data)}
+        {await show_loaded_model(session_id)}
         <div class="container">
             <!-- Left Column with Tabs -->
             <div class="tab-column">
@@ -46,7 +46,7 @@ async def landing_page(session_id: UUID, session_data: appvars.SessionData):
             <div class="content-section">
                 <!-- Tab 1 Content -->
                 <div id="tab1" class="tab-content active">
-                    {await make_model_list(session_id, session_data)}
+                    {await make_model_list(session_id)}
                 </div>
                 <!-- Tab 2 Content -->
                 <div id="tab2" class="tab-content">
@@ -74,7 +74,7 @@ async def landing_page(session_id: UUID, session_data: appvars.SessionData):
     """
     return html_page(title, page_content)
 
-async def show_loaded_model(session_id: str, session_data: appvars.SessionData):
+async def show_loaded_model(session_id: UUID):
     session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_output = "<div class=\"loadedmodel\"><h2>Loaded Model</h2>"
     headers = {
@@ -95,7 +95,7 @@ async def show_loaded_model(session_id: str, session_data: appvars.SessionData):
     str_output += "</table></div>"
     return str_output
 
-async def make_model_list(session_id: str, session_data: appvars.SessionData):
+async def make_model_list(session_id: UUID):
     session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     str_models = ("<div id=\"model_list\"><h2>Models available in this API container</h2>"
                     "<table>")
@@ -114,9 +114,7 @@ async def make_model_list(session_id: str, session_data: appvars.SessionData):
     models_dict = json.loads(models.json())
     model_names = sorted(list(models_dict.keys()))
     for model_name in model_names:
-        lst_model = [model_name]
-        lst_model.append(models_dict[model_name]["type"])
-        lst_model.append(models_dict[model_name]["desc"])
+        lst_model = [model_name, models_dict[model_name]["type"], models_dict[model_name]["desc"]]
         actions = (F"<button type=\"button\" onclick='loadmodel(\"{models_dict[model_name]["type"]}\", "
                    F"\"{models_dict[model_name]["filename"]}\");'>Load</button>\n")
         if models_dict[model_name]["type"] == "user":

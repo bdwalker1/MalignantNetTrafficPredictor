@@ -3,6 +3,8 @@ from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel, ConfigDict
 from uuid import UUID, uuid4
 
+sessions_db = {}
+
 class APISessionData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     session_id: str = None,
@@ -26,7 +28,7 @@ def get_session_data(session_id: UUID):
         session_data.session_id = str(session_id)
     else:
         session_data = sessions_db[session_id]
-        if session_data == None:
+        if session_data is None:
             session_data = APISessionData()
             session_data.created_at = datetime.now()
             session_data.session_id = str(session_id)

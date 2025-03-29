@@ -22,7 +22,7 @@ function do_web_request(url, sectionId) {
 }
 
 function loadmodel(type, name) {
-    method = ((type == 'official') ? 'loadofficialmodel' : 'loadusermodel');
+    method = ((type === 'official') ? 'loadofficialmodel' : 'loadusermodel');
 
     session_id = document.getElementById("session_id").innerHTML;
     load_url = "/apicall/?session_id=" + session_id;
@@ -30,10 +30,10 @@ function loadmodel(type, name) {
 
     do_web_request(load_url, "model_list");
     setTimeout(function(){window.location.reload();}, 500);
-};
+}
 
 function deletemodel(filename) {
-    if (confirm("Proceed with model deletion?") == true)
+    if (confirm("Proceed with model deletion?") === true)
     {
         session_id = document.getElementById("session_id").innerHTML;
         load_url = "/apicall/?session_id=" + session_id;

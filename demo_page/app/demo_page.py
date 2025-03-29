@@ -1,13 +1,11 @@
 import os
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse, StreamingResponse, RedirectResponse
 import uvicorn
 from uuid import UUID
 
-from starlette.responses import RedirectResponse
-
-import src.MNTP_Website as web
+import src.MNTP_Website as webSite
 import src.appvars as appvars
 from src.appvars import is_uuid
 import requests
@@ -16,32 +14,32 @@ demo = FastAPI()
 demo.mount("/static", StaticFiles(directory="./webpage"), name="webpage")
 
 __api_url = os.environ.get("MNTP_API_URL")
-if not(__api_url):
+if not __api_url:
     __api_url = "http://127.0.0.1:8000"
 
 appvars.init()
 appvars.api_url = __api_url
 
 @demo.get("/", name="API Demo Page")
-async def root(response: Response, session_id: UUID = None):
+async def root(session_id: UUID = None):
     session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     if is_new_session:
         return RedirectResponse(url=F"/?session_id={str(session_id)}")
-    reply = await web.landing_page(session_id, session_data)
+    reply = await webSite.landing_page(session_id, session_data)
     reply.headers['session_id'] = session_data.session_id
     return reply
 
 @demo.get("/blank", name="API Demo Page", response_class=HTMLResponse)
-async def root(response: Response):
+async def blank():
     reply = HTMLResponse(" ")
     return reply
 
 @demo.get("/favicon.ico")
-async def favicon(request: Request):
+async def favicon():
     return FileResponse("./webpage/favicon.ico")
 
 @demo.post("/apicall")
-async def apicall(endpoint: str, qstring: str, response: Response, session_id: UUID = None):
+async def apicall(endpoint: str, qstring: str, session_id: UUID = None):
     session_id, session_data, is_new_session = appvars.get_session_data(session_id)
     if is_new_session:
         return RedirectResponse(url=F"/?session_id={str(session_id)}")
@@ -54,12 +52,11 @@ async def apicall(endpoint: str, qstring: str, response: Response, session_id: U
     if apiresponse.headers.get('session_id') != session_data.api_session_id:
         session_data.api_session_id = apiresponse.headers.get('session_id')
         appvars.update_session_data(session_id, session_data)
-    output = "???????"
     if endpoint == "predictfromfile":
         async def stream_results():
             result_list = str(apiresponse.text).split("\n")
             for line in result_list:
-                yield (line + "\n")
+                yield line + "\n"
         mediatype = "text/plain"
         headers = {
             "Content-Type": mediatype,

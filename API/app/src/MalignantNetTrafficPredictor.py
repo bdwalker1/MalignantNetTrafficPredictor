@@ -6,13 +6,7 @@ import datetime as dt
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
-# from sklearn.model_selection import train_test_split
-# from sklearn.model_selection import cross_val_score
-# from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
-import src.appvars as appvars
 from src.SimpleTimer import SimpleTimer
 
 class MalignantNetTrafficPredictor:
@@ -158,20 +152,12 @@ class MalignantNetTrafficPredictor:
         return prep_df
 
     def __load_trainingfile(self, filepath):
-        # if not (os.path.exists(filepath)):
-        #     raise FileNotFoundError(f"File not found: {filepath}")
-        # if not (os.path.isfile(filepath)):
-        #     raise FileNotFoundError(f"Specified path is not a file: {filepath}")
 
         self.__training_df = pd.read_csv(filepath, sep="|", low_memory=False, dtype=self.TRAINING_FILE_COLS)
         print(f"Training data shape: {self.__training_df.shape}")
         return self.__training_df
 
     def __load_datafile(self, filepath):
-        # if not (os.path.exists(filepath)):
-        #     raise FileNotFoundError(f"File not found: {filepath}")
-        # if not (os.path.isfile(filepath)):
-        #     raise FileNotFoundError(f"Specified path is not a file: {filepath}")
 
         load_df = pd.read_csv(filepath, sep="|", low_memory=False, dtype=self.INPUT_FILE_COLS)
         print(f"Input data shape: {load_df.shape}")
@@ -213,10 +199,7 @@ class MalignantNetTrafficPredictor:
 
     def predict_to_file(self, inputpath: str, outputpath: str):
 
-        # input_filename = os.path.basename(inputpath)
-        # file_ext = Path(input_filename).suffix
         output_dir = os.path.dirname(outputpath)
-        # output_filename = os.path.basename(outputpath)
         if not(os.path.exists(output_dir)):
             os.makedirs(output_dir)
         first_pass = True
