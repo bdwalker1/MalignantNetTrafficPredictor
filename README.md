@@ -55,7 +55,7 @@ deployment working on their personal workstation.
 
 7) Run the demonstration web application:
 
-    `python.exe app/demo_page.py`
+    `python3.12 app/demo_page.py`
 
    *Wait for the terminal to say `Uvicorn running on http://0.0.0.0:80 (Press CTRL+C to quit)`*
 
