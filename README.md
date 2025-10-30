@@ -23,7 +23,7 @@ http://mntp-api.hopto.me/docs/
 For those familiar with Docker containers, you should have no problem using
 the instructions below for installing in your chosen configuration. 
 Beginners should be able to follow these instructions to get a working
-deployment working on their personal workstation.
+deployment set up on their personal workstation.
 
 **Prerequisites:**
 - Git (https://git-scm.com/downloads)
