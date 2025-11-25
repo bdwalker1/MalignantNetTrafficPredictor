@@ -6,18 +6,17 @@ There are two parts to this repository, the API and a web application that
 demonstrates the API capability.
 
 ## Quickstart
-**NOTE:** Quickstart example was taken down due to financial cost.
 
-<s>To go straight to an installed version of the demonstration web application, 
+To go straight to an installed version of the demonstration web application, 
 visit:
 
-http://mntp-demo.hopto.me
+http://mntp.hopto.me:9081
 
 The API was created using FastAPI. To see the available endpoints and a
 description of what each endpoint does, visit the API's docs page:
 
-http://mntp-api.hopto.me/docs/
-</s>
+http://mntp.hopto.me:9080/docs/
+
 ## Install your own deployment
 
 For those familiar with Docker containers, you should have no problem using
