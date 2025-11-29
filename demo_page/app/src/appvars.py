@@ -61,7 +61,10 @@ def is_uuid(uuid_to_test, version=4):
     return True
 
 def clear_old_sessions():
+    old_sessions = []
     for session_id, session_data in sessions_db.items():
         if session_data.last_access < (datetime.now() - relativedelta(days=1)):
-            del sessions_db[session_id]
+            old_sessions.append(session_id)
+    for session_id in old_sessions:
+        del sessions_db[session_id]
     return
