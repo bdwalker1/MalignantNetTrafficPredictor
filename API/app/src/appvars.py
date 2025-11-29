@@ -45,7 +45,10 @@ def update_session_data(session_id: UUID, session_data: APISessionData):
     return
 
 def clear_old_sessions():
+    old_sessions = []
     for session_id, session_data in sessions_db.items():
         if session_data.last_access < (datetime.now() - relativedelta(days=1)):
-            del sessions_db[session_id]
+            old_sessions.append(session_id)
+    for session_id in old_sessions:
+        del sessions_db[session_id]
     return
